@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block title %}Server Error - NexusMart{% endblock %}
+
+{% block content %}
+<div class="info-page-container" style="text-align: center; padding: 4rem 1rem;">
+    <div style="font-size: 4rem; margin-bottom: 1rem;">⚠️</div>
+    <h1 style="font-size: 2.25rem; font-weight: 800; color: var(--text-main); margin-bottom: 0.75rem;">Server Encountered an Issue (500)</h1>
+    <p style="color: var(--text-muted); font-size: 1.05rem; max-width: 500px; margin: 0 auto 2rem auto;">
+        We encountered an unexpected error processing your request. Please rest assured that transaction data has been preserved and rolled back safely.
+    </p>
+    <div style="display: flex; gap: 1rem; justify-content: center;">
+        <a href="{{ url_for('products') }}" class="btn btn-primary">Return to Catalog</a>
+        <a href="{{ url_for('contact') }}" class="btn btn-outline">Contact Support</a>
+    </div>
+</div>
+{% endblock %}

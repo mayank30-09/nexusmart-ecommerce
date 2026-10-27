@@ -1,0 +1,93 @@
+{
+  "timestamp": "2026-10-27T20:43:23Z",
+  "base_url": "http://127.0.0.1:5000",
+  "browser": "Chromium Headless",
+  "tests_total": 20,
+  "tests_passed": 20,
+  "tests_failed": 0,
+  "test_scenarios": [
+    {
+      "name": "Public Login Page Access",
+      "status": "PASSED"
+    },
+    {
+      "name": "About Page",
+      "status": "PASSED"
+    },
+    {
+      "name": "Contact Page",
+      "status": "PASSED"
+    },
+    {
+      "name": "Google OAuth Redirect Handshake",
+      "status": "PASSED"
+    },
+    {
+      "name": "Registration Page Render",
+      "status": "PASSED"
+    },
+    {
+      "name": "Customer Login & Dashboard",
+      "status": "PASSED"
+    },
+    {
+      "name": "Catalog Filter by Category",
+      "status": "PASSED"
+    },
+    {
+      "name": "Product Details Page",
+      "status": "PASSED"
+    },
+    {
+      "name": "Shopping Cart Add & Review",
+      "status": "PASSED"
+    },
+    {
+      "name": "Customer Address Management",
+      "status": "PASSED"
+    },
+    {
+      "name": "Checkout Review with Coupon",
+      "status": "PASSED"
+    },
+    {
+      "name": "Razorpay Modal Integration",
+      "status": "PASSED"
+    },
+    {
+      "name": "Payment Security Signature Rejection",
+      "status": "PASSED"
+    },
+    {
+      "name": "Order Confirmation & Payment Verified",
+      "status": "PASSED"
+    },
+    {
+      "name": "Order History List",
+      "status": "PASSED"
+    },
+    {
+      "name": "Order Detail View",
+      "status": "PASSED"
+    },
+    {
+      "name": "Mobile Catalog Responsive Layout",
+      "status": "PASSED"
+    },
+    {
+      "name": "Mobile Product Detail Layout",
+      "status": "PASSED"
+    },
+    {
+      "name": "Mobile Informational Layout",
+      "status": "PASSED"
+    },
+    {
+      "name": "Mobile Checkout Responsive Layout",
+      "status": "PASSED"
+    }
+  ],
+  "screenshots_captured": 20,
+  "console_errors_count": 3,
+  "network_errors_count": 1
+}

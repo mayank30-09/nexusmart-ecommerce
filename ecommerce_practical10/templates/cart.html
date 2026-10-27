@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+
+{% block title %}Shopping Cart - NexusMart{% endblock %}
+
+{% block content %}
+<div class="cart-container">
+    <div style="margin-bottom: 1.25rem; display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 1rem;">
+        <div>
+            <h1>Shopping Cart</h1>
+            <p>Manage your selected items, update quantities, and review order totals before checkout.</p>
+        </div>
+        {% if items %}
+            <form method="POST" action="{{ url_for('clear_cart') }}" onsubmit="return confirm('Are you sure you want to clear your entire cart?');">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                <button type="submit" class="btn btn-sm btn-outline text-danger" id="btn-clear-cart">
+                    🗑️ Clear Cart
+                </button>
+            </form>
+        {% endif %}
+    </div>
+
+    {% if items %}
+        <div class="cart-card">
+            <div class="table-responsive">
+                <table class="cart-table" id="cart-items-table">
+                    <thead>
+                        <tr>
+                            <th>Product</th>
+                            <th>Category</th>
+                            <th>Unit Price</th>
+                            <th style="min-width: 150px;">Quantity</th>
+                            <th>Subtotal</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in items %}
+                            <tr id="cart-row-{{ item['cart_item_id'] }}">
+                                <td>
+                                    <strong>{{ item['name'] }}</strong>
+                                    <div style="font-size: 0.8rem; color: var(--text-muted);">Stock Available: {{ item['stock'] }}</div>
+                                </td>
+                                <td>
+                                    <span class="product-category-tag" style="margin: 0;">{{ item['category'] }}</span>
+                                </td>
+                                <td>₹{{ "%.2f"|format(item['price']) }}</td>
+                                <td>
+                                    <form method="POST" action="{{ url_for('update_cart_quantity', item_id=item['cart_item_id']) }}" class="cart-qty-form" id="update-form-{{ item['cart_item_id'] }}">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                                        <input 
+                                            type="number" 
+                                            name="quantity" 
+                                            value="{{ item['quantity'] }}" 
+                                            min="1" 
+                                            max="{{ item['stock'] }}" 
+                                            class="quantity-input" 
+                                            style="width: 70px;"
+                                            id="cart-qty-input-{{ item['cart_item_id'] }}"
+                                            required
+                                        >
+                                        <button type="submit" class="btn btn-sm btn-secondary" style="padding: 4px 8px;" id="btn-update-qty-{{ item['cart_item_id'] }}">
+                                            Update
+                                        </button>
+                                    </form>
+                                </td>
+                                <td style="font-weight: 600;" id="cart-subtotal-{{ item['cart_item_id'] }}">
+                                    ₹{{ "%.2f"|format(item['subtotal']) }}
+                                </td>
+                                <td>
+                                    <form method="POST" action="{{ url_for('remove_cart_item', item_id=item['cart_item_id']) }}">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                                        <button type="submit" class="btn btn-sm btn-outline text-danger" id="btn-remove-item-{{ item['cart_item_id'] }}">
+                                            Remove
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="cart-summary">
+                <div class="total-box">
+                    <span class="total-label">Grand Cart Total:</span>
+                    <span class="total-amount" id="cart-grand-total">₹{{ "%.2f"|format(cart_total) }}</span>
+                </div>
+
+                <div class="cart-actions">
+                    <a href="{{ url_for('products') }}" class="btn btn-outline" id="btn-continue-shopping">
+                        &larr; Continue Shopping
+                    </a>
+                    <a href="{{ url_for('checkout') }}" class="btn btn-primary" id="btn-proceed-checkout" style="font-weight: 600;">
+                        Proceed to Checkout &rarr;
+                    </a>
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <div class="cart-empty-state" id="cart-empty-box">
+            <div class="empty-icon">🛒</div>
+            <h2>Your Cart is Currently Empty</h2>
+            <p>Looks like you haven't added any products to your shopping cart yet.</p>
+            <div style="margin-top: 1.5rem;">
+                <a href="{{ url_for('products') }}" class="btn btn-primary" id="btn-empty-explore">
+                    Explore Products Now &rarr;
+                </a>
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

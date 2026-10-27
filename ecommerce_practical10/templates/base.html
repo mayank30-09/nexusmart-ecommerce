@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="NexusMart - Discover quality electronics, fashion, footwear, and accessories with fast shipping and secure payments.">
+    <title>{% block title %}NexusMart - Smart Lifestyle & Tech Store{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    {% block extra_head %}{% endblock %}
+</head>
+<body>
+
+    <!-- Main Navigation Header -->
+    <header class="navbar">
+        <div class="nav-container">
+            <a href="{% if session.get('customer_id') %}{{ url_for('dashboard') }}{% else %}{{ url_for('products') }}{% endif %}" class="brand-logo" id="brand-home-link">
+                <span class="brand-icon">⚡</span>
+                <span class="brand-text">Nexus<span class="brand-accent">Mart</span></span>
+            </a>
+
+            <nav>
+                <ul class="nav-links">
+                    <li><a href="{{ url_for('products') }}" id="nav-products">Catalog</a></li>
+                    {% if session.get("customer_id") %}
+                        <li><a href="{{ url_for('dashboard') }}" id="nav-dashboard">Dashboard</a></li>
+                        <li>
+                            <a href="{{ url_for('view_cart') }}" id="nav-cart" class="nav-cart-btn">
+                                <span>Cart</span>
+                                {% if cart_count and cart_count > 0 %}
+                                    <span class="cart-badge" id="cart-badge-count">{{ cart_count }}</span>
+                                {% endif %}
+                            </a>
+                        </li>
+                        <li><a href="{{ url_for('orders_list') }}" id="nav-orders">Orders</a></li>
+                        <li><a href="{{ url_for('profile') }}" id="nav-profile">Profile</a></li>
+                        <li><span class="user-tag" id="user-greeting-tag">👤 {{ session.get("customer_name") }}</span></li>
+                        <li><a href="{{ url_for('logout') }}" class="btn btn-sm btn-outline" id="nav-logout">Logout</a></li>
+                    {% else %}
+                        <li><a href="{{ url_for('login') }}" id="nav-login">Sign In</a></li>
+                        <li><a href="{{ url_for('register') }}" class="btn btn-sm btn-primary" id="nav-register">Create Account</a></li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+        <!-- Flash Alert Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div id="flash-messages-container">
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }}" role="alert">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Professional E-Commerce Footer -->
+    <footer class="footer">
+        <div class="footer-container">
+            <div class="footer-grid">
+                <div class="footer-col brand-col">
+                    <div class="footer-brand">
+                        <span class="brand-icon">⚡</span>
+                        <span class="brand-text">Nexus<span class="brand-accent">Mart</span></span>
+                    </div>
+                    <p class="footer-tagline">
+                        Your trusted destination for premium electronics, modern fashion, and daily essentials. Designed for speed, convenience, and security.
+                    </p>
+                    <div class="payment-trust-badges">
+                        <span class="trust-badge">💳 Razorpay Verified</span>
+                        <span class="trust-badge">🔒 256-Bit SSL</span>
+                        <span class="trust-badge">⚡ Instant UPI</span>
+                        <span class="trust-badge">💵 Cash on Delivery</span>
+                    </div>
+                </div>
+
+                <div class="footer-col">
+                    <h4>Quick Links</h4>
+                    <ul class="footer-links">
+                        <li><a href="{{ url_for('products') }}">All Products</a></li>
+                        <li><a href="{{ url_for('products', category='Electronics') }}">Electronics</a></li>
+                        <li><a href="{{ url_for('products', category='Clothing') }}">Fashion & Apparel</a></li>
+                        <li><a href="{{ url_for('products', category='Footwear') }}">Footwear</a></li>
+                        <li><a href="{{ url_for('products', category='Accessories') }}">Accessories</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-col">
+                    <h4>Customer Care</h4>
+                    <ul class="footer-links">
+                        {% if session.get('customer_id') %}
+                            <li><a href="{{ url_for('orders_list') }}">My Orders & Invoices</a></li>
+                            <li><a href="{{ url_for('profile') }}">Delivery Addresses</a></li>
+                            <li><a href="{{ url_for('view_cart') }}">Shopping Cart</a></li>
+                        {% else %}
+                            <li><a href="{{ url_for('login') }}">Customer Sign In</a></li>
+                            <li><a href="{{ url_for('register') }}">Create New Account</a></li>
+                        {% endif %}
+                        <li><a href="{{ url_for('about') }}">About NexusMart</a></li>
+                        <li><a href="{{ url_for('contact') }}">Help & Support</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-col">
+                    <h4>Security & Policies</h4>
+                    <ul class="footer-links">
+                        <li><a href="{{ url_for('privacy') }}">Privacy Policy</a></li>
+                        <li><a href="{{ url_for('terms') }}">Terms of Service</a></li>
+                        <li><span class="text-muted">Safe 7-Day Returns</span></li>
+                        <li><span class="text-muted">Direct Order Tracking</span></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                <p>&copy; 2026 NexusMart E-Commerce. All rights reserved. Prices shown in Indian Rupees (₹).</p>
+                <div class="footer-status-pill">
+                    <span class="status-indicator-dot"></span> System Operational
+                </div>
+            </div>
+        </div>
+    </footer>
+
+</body>
+</html>

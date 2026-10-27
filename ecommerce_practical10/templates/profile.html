@@ -1,0 +1,200 @@
+{% extends "base.html" %}
+
+{% block title %}Customer Profile & Delivery Addresses - NexusMart{% endblock %}
+
+{% block content %}
+<div class="profile-container">
+    <div class="profile-header">
+        <h1>Customer Profile & Delivery Addresses</h1>
+        <p>Manage your account credentials, personal information, and shipping addresses.</p>
+    </div>
+
+    <div class="profile-layout-grid">
+        <!-- Column 1: Account & Profile Details -->
+        <div class="profile-card" id="customer-profile-card">
+            <h2>Personal Information</h2>
+            <p class="text-muted" style="margin-bottom: 1.25rem; font-size: 0.88rem;">
+                Member since: {{ customer['created_at'][:10] }}
+            </p>
+
+            <form method="POST" action="{{ url_for('profile') }}" id="profile-update-form">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+
+                <div class="form-group">
+                    <label for="profile-name">Full Name *</label>
+                    <input 
+                        type="text" 
+                        id="profile-name" 
+                        name="name" 
+                        class="form-control" 
+                        value="{{ customer['name'] }}" 
+                        required
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label for="profile-email">Email Address *</label>
+                    <input 
+                        type="email" 
+                        id="profile-email" 
+                        name="email" 
+                        class="form-control" 
+                        value="{{ customer['email'] }}" 
+                        required
+                    >
+                </div>
+
+                <div class="form-group" style="margin-top: 1rem;">
+                    <label>Authentication Method</label>
+                    <div style="margin-top: 0.35rem;">
+                        {% if customer['google_id'] %}
+                            <span class="badge-oauth badge-oauth-connected">
+                                Google Sign-In Connected
+                            </span>
+                        {% else %}
+                            <span class="badge-oauth badge-oauth-disconnected">
+                                Local Password Account
+                            </span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-block" id="btn-update-profile" style="margin-top: 1.25rem;">
+                    Save Profile Changes
+                </button>
+            </form>
+        </div>
+
+        <!-- Column 2: Delivery Addresses Management -->
+        <div class="addresses-section">
+            <div class="profile-card" id="saved-addresses-card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                    <h2>Saved Delivery Addresses</h2>
+                    <span class="brand-badge" id="address-count-badge">{{ addresses|length }} Saved</span>
+                </div>
+
+                {% if addresses %}
+                    <div class="addresses-list" id="addresses-list-container">
+                        {% for addr in addresses %}
+                            <div class="address-item-card {% if addr['is_default'] %}address-item-default{% endif %}" id="address-card-{{ addr['id'] }}">
+                                <div class="address-item-content">
+                                    {% if addr['is_default'] %}
+                                        <div class="default-address-pill" id="default-pill-{{ addr['id'] }}">
+                                            ★ Default Delivery Address
+                                        </div>
+                                    {% endif %}
+                                    <div class="address-line-text"><strong>{{ addr['address_line'] }}</strong></div>
+                                    <div class="address-sub-text">{{ addr['city'] }}, {{ addr['state'] }} - {{ addr['postal_code'] }}</div>
+                                </div>
+
+                                <div class="address-item-actions">
+                                    {% if not addr['is_default'] %}
+                                        <form method="POST" action="{{ url_for('set_default_address', address_id=addr['id']) }}" style="display: inline;">
+                                            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                                            <button type="submit" class="btn btn-sm btn-outline" id="btn-default-address-{{ addr['id'] }}">
+                                                Set as Default
+                                            </button>
+                                        </form>
+                                    {% endif %}
+
+                                    <a href="{{ url_for('edit_address', address_id=addr['id']) }}" class="btn btn-sm btn-secondary" id="btn-edit-address-{{ addr['id'] }}">
+                                        Edit
+                                    </a>
+
+                                    <form method="POST" action="{{ url_for('delete_address', address_id=addr['id']) }}" onsubmit="return confirm('Are you sure you want to delete this address?');" style="display: inline;">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                                        <button type="submit" class="btn btn-sm btn-outline text-danger" id="btn-delete-address-{{ addr['id'] }}">
+                                            Delete
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="empty-state" style="padding: 1.5rem 1rem; border: 1px dashed var(--border-color); border-radius: var(--radius); margin-bottom: 1.5rem;">
+                        <p style="margin: 0; color: var(--text-muted);">No delivery addresses saved yet. Add your primary shipping address below.</p>
+                    </div>
+                {% endif %}
+
+                <!-- Add New Address Form -->
+                <div class="add-address-box" style="margin-top: 1.75rem; padding-top: 1.5rem; border-top: 1px solid var(--border-color);">
+                    <h3>Add New Delivery Address</h3>
+                    <p class="text-muted" style="margin-bottom: 1rem; font-size: 0.88rem;">Add a destination for order deliveries.</p>
+
+                    <form method="POST" action="{{ url_for('add_address') }}" id="add-address-form">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+
+                        <div class="form-group">
+                            <label for="address_line">Street Address / House / Flat *</label>
+                            <input 
+                                type="text" 
+                                id="address_line" 
+                                name="address_line" 
+                                class="form-control" 
+                                placeholder="e.g. Flat 402, Green Valley Apartments, MG Road" 
+                                required
+                            >
+                        </div>
+
+                        <div class="address-fields-grid">
+                            <div class="form-group">
+                                <label for="city">City *</label>
+                                <input 
+                                    type="text" 
+                                    id="city" 
+                                    name="city" 
+                                    class="form-control" 
+                                    placeholder="e.g. Mumbai" 
+                                    required
+                                >
+                            </div>
+
+                            <div class="form-group">
+                                <label for="state">State *</label>
+                                <input 
+                                    type="text" 
+                                    id="state" 
+                                    name="state" 
+                                    class="form-control" 
+                                    placeholder="e.g. Maharashtra" 
+                                    required
+                                >
+                            </div>
+
+                            <div class="form-group">
+                                <label for="postal_code">Postal Code *</label>
+                                <input 
+                                    type="text" 
+                                    id="postal_code" 
+                                    name="postal_code" 
+                                    class="form-control" 
+                                    placeholder="e.g. 400001" 
+                                    required
+                                >
+                            </div>
+                        </div>
+
+                        <div class="form-checkbox-group" style="margin: 1rem 0;">
+                            <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                                <input 
+                                    type="checkbox" 
+                                    name="is_default" 
+                                    id="is_default" 
+                                    value="1" 
+                                    {% if not addresses %}checked{% endif %}
+                                >
+                                <span>Set as default delivery address</span>
+                            </label>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary" id="btn-save-address">
+                            + Save Address
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

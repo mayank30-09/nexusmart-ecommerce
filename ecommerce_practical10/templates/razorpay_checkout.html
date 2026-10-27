@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+
+{% block title %}Complete Payment - Order #{{ order['order_reference'] }} - NexusMart{% endblock %}
+
+{% block extra_head %}
+<!-- Official Razorpay Standard Checkout SDK -->
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="checkout-container" style="max-width: 600px; margin: 2rem auto; text-align: center;">
+    <div class="profile-card" style="padding: 2.5rem 1.5rem;">
+        <div style="font-size: 3rem; margin-bottom: 0.5rem;">🔒</div>
+        <h1 style="font-size: 1.6rem; color: var(--text-main); margin-bottom: 0.5rem;">
+            Securing Payment with Razorpay
+        </h1>
+        <p style="color: var(--text-muted); font-size: 0.95rem; margin-bottom: 1.5rem;">
+            Order Reference: <strong style="color: var(--primary);">{{ order['order_reference'] }}</strong>
+        </p>
+
+        <div style="background: #f8fafc; padding: 1.25rem; border-radius: 8px; border: 1px solid var(--border-color); margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: center;">
+            <span style="font-size: 1rem; color: var(--text-muted); font-weight: 500;">Total Payable:</span>
+            <span style="font-size: 1.6rem; font-weight: 800; color: var(--text-main);">₹{{ "%.2f"|format(order['final_total']) }}</span>
+        </div>
+
+        <p style="font-size: 0.88rem; color: var(--text-muted); margin-bottom: 1.5rem;">
+            A secure payment popup should open automatically. If it was blocked by your browser, click the button below:
+        </p>
+
+        <button type="button" class="btn btn-primary btn-lg" id="btn-open-razorpay" data-order-id="{{ order['razorpay_order_id'] }}" data-order-ref="{{ order['order_reference'] }}" style="width: 100%; margin-bottom: 1rem;">
+            💳 Open Razorpay Checkout Modal
+        </button>
+
+        <form method="POST" action="{{ url_for('razorpay_cancel', order_ref=order['order_reference']) }}" id="form-cancel-payment">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            <button type="submit" class="btn btn-outline btn-sm" id="btn-cancel-checkout">
+                ✕ Cancel and Return to Cart
+            </button>
+        </form>
+
+        <!-- Hidden Verification Form -->
+        <form method="POST" action="{{ url_for('razorpay_verify') }}" id="verify-payment-form" style="display: none;">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            <input type="hidden" name="order_reference" value="{{ order['order_reference'] }}">
+            <input type="hidden" name="razorpay_order_id" id="razorpay_order_id">
+            <input type="hidden" name="razorpay_payment_id" id="razorpay_payment_id">
+            <input type="hidden" name="razorpay_signature" id="razorpay_signature">
+        </form>
+
+        <!-- Hidden Failure Form -->
+        <form method="POST" action="{{ url_for('razorpay_fail', order_ref=order['order_reference']) }}" id="payment-failed-form" style="display: none;">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            <input type="hidden" name="failure_reason" id="failure_reason">
+        </form>
+    </div>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    var keyId = "{{ razorpay_key_id }}";
+    var orderId = "{{ order['razorpay_order_id'] }}";
+    var amountPaise = {{ amount_paise }};
+    var orderRef = "{{ order['order_reference'] }}";
+
+    var options = {
+        "key": keyId,
+        "amount": amountPaise,
+        "currency": "INR",
+        "name": "NexusMart",
+        "description": "Order #" + orderRef,
+        "order_id": orderId,
+        "prefill": {
+            "name": "{{ customer['name'] }}",
+            "email": "{{ customer['email'] }}",
+            "contact": "{{ customer_phone or '9999999999' }}"
+        },
+        "theme": {
+            "color": "#2563eb"
+        },
+        "handler": function (response) {
+            document.getElementById('razorpay_payment_id').value = response.razorpay_payment_id || "";
+            document.getElementById('razorpay_order_id').value = response.razorpay_order_id || orderId;
+            document.getElementById('razorpay_signature').value = response.razorpay_signature || "";
+            document.getElementById('verify-payment-form').submit();
+        },
+        "modal": {
+            "ondismiss": function() {
+                console.log("Razorpay modal closed by user");
+            }
+        }
+    };
+
+    var rzp = null;
+    try {
+        if (typeof Razorpay !== "undefined") {
+            rzp = new Razorpay(options);
+            rzp.on('payment.failed', function (response) {
+                var reason = (response && response.error && response.error.description) ? response.error.description : "Payment failed";
+                document.getElementById('failure_reason').value = reason;
+                document.getElementById('payment-failed-form').submit();
+            });
+            // Automatically launch checkout modal
+            rzp.open();
+        }
+    } catch (e) {
+        console.warn("Could not auto-open Razorpay:", e);
+    }
+
+    var openBtn = document.getElementById('btn-open-razorpay');
+    if (openBtn) {
+        openBtn.addEventListener('click', function () {
+            if (rzp) {
+                rzp.open();
+            } else if (typeof Razorpay !== "undefined") {
+                rzp = new Razorpay(options);
+                rzp.open();
+            } else {
+                alert("Razorpay payment script is loading. Please check your network connection.");
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

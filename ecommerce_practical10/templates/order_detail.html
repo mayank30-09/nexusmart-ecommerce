@@ -1,0 +1,208 @@
+{% extends "base.html" %}
+
+{% block title %}Order #{{ order['order_reference'] }} - NexusMart{% endblock %}
+
+{% block content %}
+<div class="checkout-container" id="order-detail-container">
+    <div class="card-header-row" style="margin-bottom: 1.5rem; align-items: center; flex-wrap: wrap; gap: 1rem;">
+        <div>
+            <div style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.25rem;">
+                <a href="{{ url_for('orders_list') }}" style="color: var(--primary); text-decoration: none;">&larr; Back to All Orders</a>
+            </div>
+            <h1 style="font-size: 1.75rem; font-weight: 700; color: var(--text-main); margin: 0;" id="order-detail-title">
+                Order #<span id="order-detail-ref">{{ order['order_reference'] }}</span>
+            </h1>
+        </div>
+
+        <div style="display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap;">
+            {% if can_cancel %}
+                <form method="POST" action="{{ url_for('cancel_order', order_id=order['id']) }}" id="form-cancel-order" onsubmit="return confirm('Are you sure you want to cancel this order? Item quantities will be restored to inventory.');">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                    <button type="submit" class="btn btn-danger btn-sm" id="btn-cancel-order">
+                        ✕ Cancel Order
+                    </button>
+                </form>
+            {% elif order['order_status'] == 'Cancelled' %}
+                <span class="badge-status badge-cancelled" style="font-size: 0.9rem; padding: 0.4rem 0.8rem;" id="badge-order-cancelled">
+                    Order Cancelled
+                </span>
+            {% endif %}
+
+            <a href="{{ url_for('orders_list') }}" class="btn btn-secondary btn-sm" id="btn-back-to-orders">
+                All Orders
+            </a>
+        </div>
+    </div>
+
+    <!-- Status Overview Bar -->
+    <div class="profile-card" style="padding: 1rem 1.5rem; margin-bottom: 1.5rem; display: flex; flex-wrap: wrap; gap: 1.5rem; justify-content: space-between; align-items: center;">
+        <div>
+            <span style="font-size: 0.8rem; color: var(--text-muted); display: block;">Order Placed:</span>
+            <strong style="color: var(--text-main);" id="detail-placed-date">{{ order['created_at'] }}</strong>
+        </div>
+        <div>
+            <span style="font-size: 0.8rem; color: var(--text-muted); display: block;">Order Lifecycle:</span>
+            {% if order['order_status'] == 'Confirmed' %}
+                <span class="badge-status badge-confirmed" id="detail-order-status">{{ order['order_status'] }}</span>
+            {% elif order['order_status'] == 'Cancelled' %}
+                <span class="badge-status badge-cancelled" id="detail-order-status">{{ order['order_status'] }}</span>
+            {% else %}
+                <span class="badge-status badge-pending" id="detail-order-status">{{ order['order_status'] }}</span>
+            {% endif %}
+        </div>
+        <div>
+            <span style="font-size: 0.8rem; color: var(--text-muted); display: block;">Payment Status:</span>
+            <span class="badge-status {% if order['payment_status'] == 'Paid' %}badge-paid{% elif 'Refund' in order['payment_status'] %}badge-refund{% else %}badge-pending{% endif %}" id="detail-payment-status">
+                {{ order['payment_status'] }}
+            </span>
+        </div>
+        <div>
+            <span style="font-size: 0.8rem; color: var(--text-muted); display: block;">Payment Mode:</span>
+            <strong style="color: var(--text-main);" id="detail-payment-mode">
+                {% if order['payment_method'] == 'cod' %}
+                    💵 Cash on Delivery
+                {% elif order['payment_method'] == 'mock_online' %}
+                    💳 Mock Online
+                {% else %}
+                    {{ order['payment_method']|upper }}
+                {% endif %}
+            </strong>
+        </div>
+    </div>
+
+    {% if order['order_status'] == 'Cancelled' %}
+        <div class="alert alert-warning" role="alert" style="margin-bottom: 1.5rem;" id="cancellation-alert">
+            ℹ️ <strong>Order Cancelled:</strong> This order was cancelled on {{ order['updated_at'] }}. All reserved items were returned to inventory stock.
+            {% if 'Refund' in order['payment_status'] %}
+                <br><em>Simulated Payment Note: A simulated refund of ₹{{ "%.2f"|format(order['final_total']) }} has been initiated.</em>
+            {% endif %}
+        </div>
+    {% endif %}
+
+    <div class="checkout-grid">
+        <!-- Left Column: Shipping Address & Order Items -->
+        <div class="checkout-main-col">
+            <!-- 1. Delivery Address Snapshot Card -->
+            <div class="profile-card" id="detail-shipping-card" style="margin-bottom: 1.5rem;">
+                <h2 style="font-size: 1.15rem; margin-bottom: 0.75rem; color: var(--text-main);">
+                    📍 Immutable Delivery Address Snapshot
+                </h2>
+                <div class="selected-address-box" style="margin-bottom: 0;">
+                    <div class="address-line-text" id="detail-shipping-line">
+                        <strong>{{ order['shipping_address_line'] }}</strong>
+                    </div>
+                    <div class="address-sub-text" id="detail-shipping-details">
+                        {{ order['shipping_city'] }}, {{ order['shipping_state'] }} - {{ order['shipping_postal_code'] }}
+                    </div>
+                    <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.4rem;">
+                        <em>Note: Address details are preserved as recorded at the moment of order placement.</em>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. Ordered Items Snapshot Card -->
+            <div class="profile-card" id="detail-items-card">
+                <div class="card-header-row" style="margin-bottom: 1rem;">
+                    <h2 style="font-size: 1.15rem; color: var(--text-main);">
+                        📦 Purchased Items ({{ items|length }})
+                    </h2>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="cart-table" id="detail-items-table">
+                        <thead>
+                            <tr>
+                                <th>Product Name</th>
+                                <th>Unit Price</th>
+                                <th>Quantity</th>
+                                <th style="text-align: right;">Line Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in items %}
+                                <tr id="detail-item-row-{{ item['id'] }}">
+                                    <td>
+                                        <strong id="detail-item-name-{{ item['id'] }}">{{ item['product_name'] }}</strong>
+                                        {% if item['product_id'] %}
+                                            <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 2px;">
+                                                <a href="{{ url_for('product_detail', product_id=item['product_id']) }}" style="color: var(--primary);">View Product Page</a>
+                                            </div>
+                                        {% endif %}
+                                    </td>
+                                    <td id="detail-item-price-{{ item['id'] }}">₹{{ "%.2f"|format(item['unit_price']) }}</td>
+                                    <td>
+                                        <span class="badge-qty" id="detail-item-qty-{{ item['id'] }}">{{ item['quantity'] }}</span>
+                                    </td>
+                                    <td style="text-align: right; font-weight: 600;" id="detail-item-total-{{ item['id'] }}">
+                                        ₹{{ "%.2f"|format(item['line_total']) }}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column: Financial Breakdown & Safe Transaction Details -->
+        <div class="checkout-side-col">
+            <div class="profile-card checkout-summary-card" id="detail-financial-summary">
+                <h2 style="font-size: 1.15rem; margin-bottom: 1.25rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.75rem;">
+                    Financial Receipt
+                </h2>
+
+                <div class="summary-line-row">
+                    <span class="summary-label">Items Subtotal:</span>
+                    <span class="summary-value" id="detail-subtotal">₹{{ "%.2f"|format(order['subtotal']) }}</span>
+                </div>
+
+                {% if order['discount_amount'] > 0 %}
+                    <div class="summary-line-row discount-row" style="color: var(--success); font-weight: 500;">
+                        <span class="summary-label">
+                            Coupon Discount {% if order['coupon_code'] %}(<strong>{{ order['coupon_code'] }}</strong>){% endif %}:
+                        </span>
+                        <span class="summary-value" id="detail-discount">-₹{{ "%.2f"|format(order['discount_amount']) }}</span>
+                    </div>
+                {% else %}
+                    <div class="summary-line-row" style="color: var(--text-muted); font-size: 0.9rem;">
+                        <span class="summary-label">Coupon Discount:</span>
+                        <span class="summary-value">₹0.00</span>
+                    </div>
+                {% endif %}
+
+                <div class="summary-line-row" style="color: var(--text-muted); font-size: 0.9rem;">
+                    <span class="summary-label">Shipping &amp; Delivery:</span>
+                    <span class="summary-value" style="color: var(--success); font-weight: 600;">FREE</span>
+                </div>
+
+                <div class="summary-divider"></div>
+
+                <div class="summary-line-row total-row">
+                    <span class="summary-total-label">Total Amount:</span>
+                    <span class="summary-total-value" id="detail-final-total">₹{{ "%.2f"|format(order['final_total']) }}</span>
+                </div>
+
+                <!-- Transaction Reference Snapshot -->
+                <div style="margin-top: 1.5rem; padding-top: 1rem; border-top: 1px dashed var(--border-color);">
+                    <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.25rem;">
+                        Safe Transaction Reference:
+                    </div>
+                    <div style="font-family: monospace; font-size: 0.85rem; color: var(--text-main);" id="detail-txn-ref">
+                        {{ order['payment_reference'] or 'N/A' }}
+                    </div>
+                </div>
+
+                <!-- Action Links -->
+                <div style="margin-top: 1.75rem; display: flex; flex-direction: column; gap: 0.75rem;">
+                    <a href="{{ url_for('orders_list') }}" class="btn btn-secondary btn-block" style="text-align: center;">
+                        📦 Back to All Orders
+                    </a>
+                    <a href="{{ url_for('products') }}" class="btn btn-outline btn-block" style="text-align: center;">
+                        &larr; Continue Shopping
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

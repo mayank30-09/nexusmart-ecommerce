@@ -1,0 +1,579 @@
+Practical No: 4
+Practical 4: Create Software Requirement Specification(SRS)  for your System
+Software Requirements Specification(SRS):
+E-Commerce Website
+
+TABLE OF CONTENTS
+Introduction
+ 1.1 Purpose
+ 1.2 Scope
+ 1.3 Intended Audience
+ 1.4 Definitions and Abbreviations
+Overall Description
+ 2.1 Product Perspective
+ 2.2 Product Functions
+ 2.3 User Classes and Characteristics
+ 2.4 Operating Environment
+ 2.5 Constraints
+ 2.6 Assumptions and Dependencies
+Functional Requirements
+ 3.1 Customer Management
+ 3.2 Product Management
+ 3.3 Search and Filtering
+ 3.4 Shopping Cart
+ 3.5 Checkout and Payment
+ 3.6 Order Management
+ 3.7 AI-Based Recommendation
+ 3.8 Inventory Management
+ 3.9 Discount Management
+ 3.10 Administrator Management
+ 3.11 Error Handling
+Non-Functional Requirements
+ 4.1 Performance
+ 4.2 Scalability
+ 4.3 Security
+ 4.4 Payment Security
+ 4.5 Usability
+ 4.6 Accessibility
+ 4.7 Reliability
+ 4.8 Compatibility
+ 4.9 Backup and Recovery
+ 4.10 Maintainability
+External Interface Requirements
+ 5.1 User Interface
+ 5.2 Hardware Interface
+ 5.3 Software Interface
+ 5.4 Communication Interface
+System Data Requirements
+Business Rules
+Constraints
+AI-Based Recommendation Feature
+Error Handling
+Requirement Traceability Matrix
+Conclusion
+INTRODUCTION
+1.1 Purpose
+The purpose of this Software Requirements Specification (SRS) is to define the functional and non-functional requirements of the E-Commerce Website.
+
+This document specifies the expected behavior, major features, users, interfaces, data requirements, business rules, constraints, and quality requirements of the system. It provides a common reference for the development team, testers, project guide, administrators, and future maintainers.
+
+The requirements are expressed using clear and testable statements, primarily using the term “shall”, so that the implemented system can be verified against the specified requirements.
+1.2 Scope
+The E-Commerce Website is a web-based mini-project designed to allow customers to purchase products online.
+The system shall provide customers with facilities to:
+Create an account and log in.
+Manage their profile and delivery addresses.
+Browse products by category.
+Search for products using keywords.
+Filter products according to available criteria.
+View detailed product information.
+Add, remove, and update products in a shopping cart.
+Review the cart and order details before checkout.
+Make online payments through an integrated payment gateway.
+Place orders after successful payment confirmation.
+View order history and current order status.
+Cancel orders before shipping.
+Receive product recommendations based on customer activity.
+The system shall also provide an administrator section for:
+Adding, editing, and removing products.
+Updating product details and stock.
+Managing inventory.
+Managing discount and coupon codes.
+Viewing orders and updating order status.
+The system shall also provide appropriate error handling for situations such as invalid login, failed payment, unavailable products, invalid coupons, and order-processing failures.
+A simple AI-based recommendation feature shall suggest products based on customer activity. For new customers without sufficient activity, the system shall provide general recommendations.
+1.3 Intended Audience
+This SRS is intended for the following stakeholders:
+Developers: To understand the required system behavior and functionality.
+System Analysts: To analyze and maintain the requirements.
+Testers: To verify that the developed system satisfies the specified requirements.
+Project Guide/Faculty: To review the project requirements and scope.
+Administrators: To understand the functions available for managing the system.
+Future Maintainers: To understand the system requirements when making corrections or modifications.
+1.4 Definitions and Abbreviations
+OVERALL DESCRIPTION
+2.1 Product Perspective
+The E-Commerce Website is a web-based software system that provides an online platform for browsing and purchasing products.
+At a high level, the system consists of:
+Customer Interface → Application System → Database
+The customer interacts with the system through web pages for registration, login, product browsing, searching, filtering, cart management, checkout, payment, and order management.
+The administrator interacts with separate administrative functions for product management, inventory management, discount management, and order management.
+The system shall interact with an external Payment Gateway for online payment processing.
+The system shall also contain a simple AI Recommendation Component that uses available customer activity, such as viewed, searched, and previously purchased products, to provide product recommendations.
+The exact programming languages, frameworks, database system, and other implementation technologies are not fixed in this SRS. Specific implementation technologies will be finalized during the implementation phase.
+2.2 Product Functions
+The major functions of the E-Commerce Website are:
+Customer registration.
+Customer authentication and login.
+Customer profile management.
+Delivery address management.
+Product browsing by category.
+Product keyword search.
+Product filtering.
+Product detail viewing.
+Shopping cart management.
+Cart total calculation and updating.
+Checkout and order review.
+Online payment.
+Payment confirmation and order creation.
+Unique order identification.
+Order history and status tracking.
+Order cancellation before shipping.
+AI-based product recommendations.
+Product and inventory management by administrator.
+Discount and coupon management.
+Order management by administrator.
+Error handling and appropriate error messages.
+2.3 User Classes and Characteristics
+
+2.3.1 Customer
+A customer is a registered user who uses the website to browse and purchase products.
+The customer shall be able to:
+Register an account.
+Log in securely.
+Manage profile information.
+Manage delivery addresses.
+Browse available products.
+Search and filter products.
+View product details.
+Add products to the cart.
+Modify cart quantities.
+Remove products from the cart.
+Review order details.
+Make online payments.
+View order history and status.
+Cancel eligible orders.
+View product recommendations.
+Customers are expected to have basic knowledge of using a web browser and online shopping interfaces.
+2.3.2 Administrator
+An administrator is an authorized user responsible for managing the operational data of the website.
+The administrator shall be able to:
+Add, edit, and remove products.
+Update product information.
+Update product stock.
+Manage discount and coupon codes.
+View customer orders.
+Update order status.
+Perform authorized administrative operations.
+Administrator access shall be restricted to authorized users.
+2.4 Operating Environment
+The system shall operate as a web-based application.
+The expected operating environment includes:
+Desktop and laptop computers.
+Smartphones and tablets.
+Common modern web browsers.
+Internet/network connectivity.
+A web application environment consisting of application processing and data storage.
+The system shall provide a responsive layout suitable for common desktop and mobile browsers.
+Specific operating-system, programming-language, framework, and database requirements are not fixed at the SRS stage.
+2.5 Constraints
+The development and operation of the E-Commerce Website are subject to the following constraints:
+The project is developed by a small student team.
+Development must be completed within the semester/project schedule.
+Available college or personal computing resources shall be used.
+The project shall use a web-based frontend, backend, and database approach.
+Online payment depends on an available payment gateway or suitable sandbox/test service.
+Internet connectivity is required for online access and payment-gateway communication.
+Administrative functionality shall be restricted to authorized administrators.
+2.6 Assumptions and Dependencies
+The following assumptions and dependencies apply to the system:
+Customers have access to an internet connection while using the website.
+The external payment gateway is available when online payments are attempted.
+The payment gateway provides sufficient confirmation information for determining payment status.
+Product, stock, customer, and order information required by the system is available in the system database.
+The recommendation feature has access to available customer activity data.
+New customers may not have sufficient activity data for personalized recommendations.
+Specific implementation technologies will be finalized during the implementation phase.
+The target of approximately 100 concurrent users applies to the initial mini-project and demonstration/testing scope.
+FUNCTIONAL REQUIREMENTS
+Functional requirements define the operations that the E-Commerce Website shall perform. Each requirement is assigned a unique identifier for traceability and verification.
+3.1 Customer Management
+FR-01 — Customer Registration
+The system shall allow customers to create an account using:
+Name
+Email address
+Mobile number
+Password
+The system shall store the required customer account information for subsequent authentication and account management.
+FR-02 — Customer Login
+The system shall allow registered customers to authenticate using their email address and password.
+The system shall reject invalid login credentials and display an appropriate error message.
+FR-03 — Customer Profile and Address Management
+The system shall allow authenticated customers to:
+View and manage their profile information.
+Add delivery addresses.
+Update delivery addresses.
+Manage their available delivery addresses.
+Customers shall be able to use an appropriate delivery address during checkout.
+3.2 Product Management
+FR-04 — Product Browsing
+The system shall allow customers to browse available products by category.
+The system shall display products that are available for browsing according to their current product information and availability.
+FR-05 — Product Search
+The system shall allow customers to search for products using keywords.
+The system shall display products matching the search criteria.
+FR-06 — Product Filtering
+The system shall allow customers to filter products using available product attributes, including:
+Category
+Price range
+Availability
+The system shall display products matching the selected filter conditions.
+FR-07 — Product Details
+The system shall display relevant product details, including:
+Product name
+Product images
+Product description
+Price
+Category
+Stock status
+Applicable discount
+The displayed product information shall reflect the current information available in the system.
+3.3 Search and Filtering
+Product search and filtering shall support customers in locating suitable products efficiently.
+The system shall:
+Accept keyword-based product searches.
+Apply selected category filters.
+Apply selected price-range filters.
+Apply availability filters.
+Display the resulting matching products.
+Allow customers to continue browsing after performing a search or filter operation.
+The normal response time for product browsing and search operations shall comply with NFR-01.
+3.4 Shopping Cart
+FR-08 — Cart Management
+The system shall allow authenticated customers to:
+Add products to the cart.
+Remove products from the cart.
+Update product quantities in the cart.
+View the products currently added to the cart.
+The system shall maintain the selected products and quantities as part of the customer's cart.
+FR-09 — Cart Total Update
+The system shall calculate and display the current cart total.
+The system shall update the cart total when:
+Product quantities are changed.
+Products are added or removed.
+Applicable discounts change.
+The system shall ensure that the displayed total reflects the current cart contents and applicable discounts.
+3.5 Checkout and Payment
+FR-10 — Checkout
+The system shall allow a customer to proceed to checkout after selecting products.
+During checkout, the system shall allow the customer to:
+Select a delivery address.
+Review selected products.
+Review product quantities.
+Review applicable discounts.
+Review the total amount.
+Confirm the order details before payment.
+The system shall verify current product availability before allowing the order to proceed.
+FR-11 — Online Payment
+The system shall allow customers to make online payments through an integrated external payment gateway.
+The system shall receive and process the payment status returned by the payment gateway.
+The system shall not directly store customer card details.
+FR-12 — Order Creation
+The system shall create a successful order only after receiving the required confirmation that the payment has been successfully completed.
+If payment fails, the system shall not create a successful completed order for that failed payment.
+The system shall support payment retry without creating duplicate successful orders.
+FR-13 — Unique Order Number
+The system shall assign a unique order number to every successfully created order.
+The order number shall be used to identify the order during order history and order-status operations.
+3.6 Order Management
+FR-14 — Order History and Status
+The system shall allow authenticated customers to view:
+Their previous orders.
+Current order status.
+Relevant order information.
+Customers shall only be able to access their own order information.
+FR-15 — Order Cancellation
+The system shall allow customers to cancel an order only when the order has not yet been shipped.
+The system shall prevent cancellation after the order has reached the shipping stage.
+3.7 AI-Based Recommendation
+FR-16 — Product Recommendations
+The system shall provide product recommendations based on available customer activity.
+The recommendation feature may consider:
+Products viewed by the customer.
+Products searched by the customer.
+Products previously purchased by the customer.
+For new customers with insufficient activity data, the system shall provide general product recommendations.
+The recommendation feature shall display suggested products to the customer.
+3.8 Inventory Management
+FR-18 — Inventory/Stock Control
+The system shall maintain the available stock information for products.
+The system shall prevent a customer from ordering a quantity greater than the available stock.
+The system shall verify product availability before order completion.
+The administrator shall be able to update product stock.
+3.9 Discount Management
+FR-19 — Discount/Coupon Management
+The system shall allow authorized administrators to:
+Create discount or coupon codes.
+Update discount or coupon codes.
+Remove discount or coupon codes.
+Define validity periods for applicable coupons.
+The system shall check coupon validity before applying a discount.
+Invalid or expired coupons shall not reduce the order amount.
+3.10 Administrator Management
+FR-17 — Admin Product Management
+The system shall allow authorized administrators to:
+Add products.
+Edit products.
+Remove products.
+Update product name.
+Update product description.
+Update product category.
+Update product price.
+Update product stock information.
+FR-20 — Admin Order Management
+The system shall allow authorized administrators to:
+View customer orders.
+Review order information.
+Update order status.
+Administrative functions shall only be accessible to authorized administrators.
+3.11 Error Handling
+FR-21 — Error Messages
+The system shall provide appropriate error messages for conditions including:
+Invalid login credentials.
+Failed online payment.
+Unavailable products.
+Invalid or expired coupons.
+Requested quantity greater than available stock.
+Order-processing failures.
+The system shall prevent duplicate successful orders when payment or order processing fails.
+NON-FUNCTIONAL REQUIREMENTS
+Non-functional requirements specify the quality attributes and operational constraints of the E-Commerce Website. They complement the functional requirements by defining how the system should perform. This separation between what the system does and how well it does it is standard SRS practice.
+4.1 Performance
+The system shall provide acceptable response time for normal customer operations.
+For the initial mini-project, product browsing, product search, and cart-related operations shall normally respond within 3 seconds under the intended operating conditions.
+Performance shall be considered in the context of the defined mini-project scope rather than enterprise-scale deployment.
+4.2 Scalability
+The initial system shall support approximately 100 concurrent users for demonstration and testing.
+This value represents the intended initial project capacity and does not represent a requirement for commercial-scale deployment.
+4.3 Security
+The system shall protect customer account information from unauthorized access.
+The system shall:
+Protect passwords from plain-text storage.
+Require authentication for personal account information.
+Restrict customers to their own account and order information.
+Restrict administrative functionality to authorized administrators.
+4.4 Payment Security
+Payment processing shall be performed through an integrated payment gateway.
+The system shall not directly store customer card details.
+The system may store necessary payment-related information such as payment status and transaction reference as required for order processing.
+4.5 Usability
+The system shall provide a simple and understandable user interface.
+The interface shall support common shopping activities such as:
+Browsing products.
+Searching products.
+Filtering products.
+Adding products to the cart.
+Reviewing the cart.
+Completing checkout.
+4.6 Accessibility
+The system shall provide basic accessibility support.
+Important interface elements shall have:
+Readable text.
+Clear labels.
+Understandable controls.
+Basic keyboard accessibility.
+4.7 Reliability
+The system shall handle payment and order-processing failures without creating duplicate successful orders.
+The system shall also verify relevant product availability before completing an order.
+4.8 Compatibility
+The system shall provide a responsive layout that can be used on common:
+Desktop browsers.
+Laptop browsers.
+Mobile browsers.
+Tablet browsers.
+4.9 Backup and Recovery
+Important customer, product, and order data shall be backed up regularly.
+The backup approach and recovery procedure shall be finalized according to the implementation environment available to the student project.
+4.10 Maintainability
+The application code shall be organized into separate modules so that individual parts of the system can be maintained or modified without unnecessarily affecting unrelated functionality.
+EXTERNAL INTERFACE REQUIREMENTS
+5.1 User Interface
+The E-Commerce Website shall provide user interfaces appropriate for both customers and administrators.
+Customer Interface
+Important customer screens shall include:
+Registration screen.
+Login screen.
+Product catalogue.
+Product search and filtering interface.
+Product details screen.
+Shopping cart.
+Checkout screen.
+Payment interface.
+Order history and order-status screen.
+Customer profile.
+Delivery-address management.
+The interface shall use clear labels and understandable navigation.
+
+Administrator Interface
+Important administrator screens shall include:
+Product management.
+Inventory/stock management.
+Discount/coupon management.
+Order management.
+Order-status management.
+Administrative screens shall only be accessible to authorized administrators.
+5.2 Hardware Interface
+The system does not require specialized hardware.
+The system shall be usable through:
+Desktop computers.
+Laptop computers.
+Smartphones.
+Tablets.
+Keyboard and display devices.
+Standard internet/network connectivity.
+5.3 Software Interface
+The system shall interact with the following software components or external services:
+Specific frameworks, programming languages, and database products are not defined in this SRS.
+5.4 Communication Interface
+The system shall use internet/network communication for:
+Communication between the web browser and application system.
+Access to the web application.
+Communication with the external payment gateway.
+Payment-related communication shall depend on the interface and services provided by the selected payment gateway.
+SYSTEM DATA REQUIREMENTS
+The system shall handle the following major categories of data.
+The system shall maintain data required for the operation of customer management, product management, cart management, payment, orders, inventory, discounts, and recommendations.
+The SRS does not define a detailed database schema or normalization design because those details belong to the design and implementation phase.
+BUSINESS RULES
+The following business rules define important conditions that shall be followed by the system.
+BR-01 — Customer Authentication
+A customer shall authenticate before accessing personal account information and order information.
+BR-02 — Stock Availability
+A customer shall not be allowed to order more than the available stock of a product.
+BR-03 — Payment Confirmation
+A successful order shall require the required confirmation of successful payment.
+BR-04 — Order Cancellation
+Order cancellation shall be allowed only before the order is shipped.
+BR-05 — Coupon Validity
+Invalid or expired coupons shall not reduce the order amount.
+BR-06 — Customer Data Access
+A customer shall only be able to access their own account and order information.
+BR-07 — Administrator Authorization
+Only authorized administrators shall be allowed to access administrative functions.
+BR-08 — Card Information
+The website shall not directly store customer card details. Payment processing shall be handled through the external payment gateway.
+CONSTRAINTS
+The following constraints are applicable to the E-Commerce Website.
+AI-BASED RECOMMENDATION FEATURE
+The E-Commerce Website shall provide a simple AI-based recommendation feature to help customers discover products relevant to their activity on the website.
+9.1 Purpose
+The purpose of the recommendation feature is to suggest products that may be relevant to a customer's interests and previous activity.
+The feature is intended to provide simple product recommendations within the scope of the mini-project.
+9.2 Input
+The recommendation feature may use available customer activity such as:
+Products viewed by the customer.
+Products searched by the customer.
+Products previously purchased by the customer.
+The available activity shall be used as input for generating suitable product recommendations.
+9.3 Recommendations for New Customers
+A new customer may not have sufficient activity information for personalized recommendations.
+In such cases, the system shall display general product recommendations.
+These recommendations may be based on generally relevant or popular products available in the system.
+No specific machine-learning algorithm or implementation technology is mandated by this SRS.
+9.4 Output
+The recommendation feature shall display suggested products to the customer.
+The output shall consist of product recommendations that the customer can view and potentially select for further browsing.
+The recommendation feature shall not alter the customer's cart or place an order automatically.
+ERROR HANDLING
+The system shall provide clear and appropriate responses when an operation cannot be completed.
+Error messages shall be understandable to the user and shall indicate, where appropriate, that corrective action is required.
+REQUIREMENT TRACEABILITY MATRIX
+The traceability matrix establishes a relationship between the requirements identified during Practical-3 and the corresponding SRS requirements. Traceability is an important characteristic of a good SRS because it helps connect requirements with later development and verification activities.
+Functional Requirement Coverage
+Non-Functional Requirement Coverage
+CONCLUSION
+This Software Requirements Specification defines the requirements and expected behavior of the E-Commerce Website mini-project.
+The document specifies the major customer and administrator functions, product and inventory management, shopping cart and checkout, online payment, order management, discount handling, AI-based product recommendations, error handling, non-functional requirements, external interfaces, system data, business rules, constraints, and requirement traceability.
+The SRS provides a clear and structured basis for implementing and verifying the E-Commerce Website while maintaining the scope and requirements established during Practical-3.
+Term | Meaning
+SRS | Software Requirements Specification
+AI | Artificial Intelligence
+UI | User Interface
+FR | Functional Requirement
+NFR | Non-Functional Requirement
+Admin | Administrator
+Payment Gateway | External service used to process online payments
+Cart | Temporary collection of products selected by a customer for purchase
+ID | Category | Requirement
+NFR-01 | Performance | The system shall normally respond to product browsing, product search, and cart operations within 3 seconds under the intended initial operating conditions.
+NFR-02 | Scalability | The initial mini-project shall support approximately 100 concurrent users for demonstration and testing purposes.
+NFR-03 | Security | The system shall protect customer passwords and shall not store passwords in plain text.
+NFR-04 | Payment Security | The system shall not directly store customer card details. Payment processing shall be handled through the integrated payment gateway, with required payment status or transaction reference information retained as applicable.
+NFR-05 | Usability | The system shall provide a simple and understandable interface for browsing products, managing the cart, and completing checkout.
+NFR-06 | Accessibility | The system shall provide readable text, clear labels, and basic keyboard accessibility for important interactions.
+NFR-07 | Reliability | The system shall prevent duplicate successful orders when payment or order processing fails.
+NFR-08 | Compatibility | The system shall provide a responsive layout suitable for common desktop and mobile web browsers.
+NFR-09 | Backup and Recovery | Important customer, product, and order data shall be backed up regularly.
+NFR-10 | Maintainability | The application code shall be organized into separate modules to support maintenance and modification.
+Software Component | Purpose
+Web Browser | Provides access to the customer and administrator interfaces
+Application/Backend | Processes system operations and business logic
+Database | Stores customer, product, cart, order, payment-status, discount, and related information
+Payment Gateway | Processes online payment transactions
+Recommendation Component | Provides product recommendations based on available customer activity
+Data Entity | Important Data
+Customer | Name, email, mobile number, password, delivery addresses
+Product | Name, image, description, price, category, stock status
+Cart | Products, quantities, applicable discounts, total
+Order | Unique order number, products, quantities, amount, status
+Payment | Payment status, transaction reference
+Discount | Coupon code, validity period, applicable conditions
+Recommendation | Customer activity and recommended products
+ID | Constraint Type | Description
+CON-01 | Resource Constraint | The project shall be developed using the available resources of the student team, including college or personal computing facilities.
+CON-02 | Time Constraint | Development shall be completed within the semester/project schedule.
+CON-03 | Technological Constraint | The system shall be implemented as a web-based application using frontend, backend, and database components. Specific technologies are not fixed at the SRS stage.
+CON-04 | External Service Constraint | Online payment functionality depends on the availability of an appropriate payment gateway or sandbox/test service.
+CON-05 | Operational/Internet Constraint | Internet connectivity is required for accessing the web application and communicating with the payment gateway.
+CON-06 | Administrator Access Constraint | Administrative functions shall be restricted to authorized administrators.
+Error Condition | System Response
+Invalid Login | The system shall display an appropriate error message and shall not authenticate the customer.
+Failed Payment | The system shall display an appropriate payment error and allow the customer to retry without creating a duplicate successful order.
+Unavailable Product | The system shall prevent the customer from ordering an unavailable product or unavailable quantity.
+Invalid Coupon | The system shall reject the coupon and shall not apply the discount.
+Quantity Exceeds Stock | The system shall prevent checkout/order completion for a quantity greater than available stock.
+Order Processing Failure | The system shall prevent creation of a duplicate successful order and shall display an appropriate error message.
+Requirement Category | SRS IDs
+Customer Management | FR-01 to FR-03
+Product Management | FR-04 to FR-07
+Cart and Checkout | FR-08 to FR-10
+Payment | FR-11 to FR-13
+Orders | FR-14 to FR-15
+Recommendations | FR-16
+Administration | FR-17 to FR-20
+Error Handling | FR-21
+Quality Requirements | NFR-01 to NFR-10
+Constraints | CON-01 to CON-06
+ID | Requirement
+FR-01 | Customer Registration
+FR-02 | Customer Login
+FR-03 | Customer Profile and Address Management
+FR-04 | Product Browsing
+FR-05 | Product Search
+FR-06 | Product Filtering
+FR-07 | Product Details
+FR-08 | Cart Management
+FR-09 | Cart Total Update
+FR-10 | Checkout
+FR-11 | Online Payment
+FR-12 | Order Creation
+FR-13 | Unique Order Number
+FR-14 | Order History and Status
+FR-15 | Order Cancellation
+FR-16 | Product Recommendations
+FR-17 | Admin Product Management
+FR-18 | Inventory/Stock Control
+FR-19 | Discount/Coupon Management
+FR-20 | Admin Order Management
+FR-21 | Error Messages
+ID | Requirement
+NFR-01 | Performance: normal operations within 3 seconds
+NFR-02 | Scalability: approximately 100 concurrent users
+NFR-03 | Security: password protection
+NFR-04 | Payment Security: no direct card-detail storage
+NFR-05 | Usability
+NFR-06 | Basic Accessibility
+NFR-07 | Reliability
+NFR-08 | Responsive Compatibility
+NFR-09 | Backup and Recovery
+NFR-10 | Maintainability

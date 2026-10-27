@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block title %}Page Not Found - NexusMart{% endblock %}
+
+{% block content %}
+<div class="info-page-container" style="text-align: center; padding: 4rem 1rem;">
+    <div style="font-size: 4rem; margin-bottom: 1rem;">🔍</div>
+    <h1 style="font-size: 2.25rem; font-weight: 800; color: var(--text-main); margin-bottom: 0.75rem;">Page Not Found (404)</h1>
+    <p style="color: var(--text-muted); font-size: 1.05rem; max-width: 500px; margin: 0 auto 2rem auto;">
+        The page or product you were looking for doesn't exist, has been moved, or is temporarily unavailable.
+    </p>
+    <div style="display: flex; gap: 1rem; justify-content: center;">
+        <a href="{{ url_for('products') }}" class="btn btn-primary">Browse Catalog</a>
+        <a href="{% if session.get('customer_id') %}{{ url_for('dashboard') }}{% else %}{{ url_for('login') }}{% endif %}" class="btn btn-outline">Go to Home</a>
+    </div>
+</div>
+{% endblock %}

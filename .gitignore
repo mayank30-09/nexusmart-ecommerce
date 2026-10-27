@@ -1,0 +1,43 @@
+# Python bytecode & cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Environment variables & secrets
+.env
+.env.*
+!.env.example
+*.secret
+*.key
+credentials.json
+client_secret*.json
+
+# Virtual environments
+venv/
+env/
+ENV/
+.venv/
+
+# IDE & Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Database & temporary files
+*.db
+*.sqlite
+*.sqlite3
+*.db-journal
+*.db-wal
+ecommerce_backup.db
+ecommerce_practical10_backup/
+*.log

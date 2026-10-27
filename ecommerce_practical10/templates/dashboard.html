@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+
+{% block title %}Customer Dashboard - NexusMart{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <div class="dashboard-header">
+        <div style="font-size: 0.85rem; font-weight: 700; color: var(--primary); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.25rem;">Customer Dashboard</div>
+        <h1>Welcome back, {{ customer['name'] }}! 👋</h1>
+        <p>Logged in as <strong>{{ customer['email'] }}</strong> | Member since: {{ customer['created_at'][:10] }}</p>
+        <div style="margin-top: 0.75rem; display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
+            {% if customer['google_id'] %}
+                <span class="badge-oauth badge-oauth-connected" id="oauth-status-badge">
+                    <svg viewBox="0 0 18 18" width="14" height="14" aria-hidden="true">
+                        <path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.616z"/>
+                        <path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.258c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332C2.438 15.983 5.482 18 9 18z"/>
+                        <path fill="#FBBC05" d="M3.964 10.707c-.18-.54-.282-1.117-.282-1.707s.102-1.167.282-1.707V4.961H.957C.347 6.175 0 7.55 0 9s.347 2.825.957 4.039l3.007-2.332z"/>
+                        <path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0 5.482 0 2.438 2.017.957 4.961L3.964 7.293C4.672 5.166 6.656 3.58 9 3.58z"/>
+                    </svg>
+                    Google Account Connected
+                </span>
+            {% else %}
+                <span class="badge-oauth badge-oauth-disconnected" id="oauth-status-badge">
+                    ⚪ Google Account Not Linked
+                </span>
+                <a href="{{ url_for('google_login', action='link') }}" class="btn btn-sm btn-outline" id="btn-link-google">
+                    Link Google Account
+                </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="stats-grid">
+        <div class="stat-card">
+            <span class="stat-title">Available Products</span>
+            <div class="stat-value" id="stat-products-count">{{ total_products }}</div>
+            <p>Curated products across Electronics, Fashion, Footwear & Accessories</p>
+            <div style="margin-top: 1rem;">
+                <a href="{{ url_for('products') }}" class="btn btn-sm btn-primary">Browse Catalog &rarr;</a>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <span class="stat-title">Active Shopping Cart</span>
+            <div class="stat-value" id="stat-cart-qty">{{ cart_stats['total_qty'] }}</div>
+            <p>{{ cart_stats['item_types'] }} unique product item(s) currently in your cart</p>
+            <div style="margin-top: 1rem;">
+                <a href="{{ url_for('view_cart') }}" class="btn btn-sm btn-secondary">Open Cart &rarr;</a>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <span class="stat-title">My Orders</span>
+            <div class="stat-value" id="stat-orders-count">{{ order_count }}</div>
+            <p>View order history, status updates, receipts, and tracking</p>
+            <div style="margin-top: 1rem;">
+                <a href="{{ url_for('orders_list') }}" class="btn btn-sm btn-outline" id="btn-dash-stat-orders">View Orders &rarr;</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="quick-actions">
+        <h2>Account Shortcuts</h2>
+        <p>Quick access to your shopping activities and account settings:</p>
+        
+        <div class="actions-buttons">
+            <a href="{{ url_for('products') }}" class="btn btn-primary" id="btn-dash-products">
+                🔍 Explore Catalog
+            </a>
+            <a href="{{ url_for('view_cart') }}" class="btn btn-secondary" id="btn-dash-cart">
+                🛒 Shopping Cart
+            </a>
+            <a href="{{ url_for('orders_list') }}" class="btn btn-primary" id="btn-dash-orders">
+                📦 My Orders & Receipts
+            </a>
+            <a href="{{ url_for('profile') }}" class="btn btn-outline" id="btn-dash-profile">
+                👤 Profile & Addresses
+            </a>
+            <a href="{{ url_for('logout') }}" class="btn btn-outline" id="btn-dash-logout">
+                🚪 Sign Out
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

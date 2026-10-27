@@ -1,0 +1,11 @@
+Name                                Stmts   Miss Branch BrPart  Cover   Missing
+-------------------------------------------------------------------------------
+ecommerce_practical10\app.py          409      4    102      2    99%   70->72, 308-310, 766
+ecommerce_practical10\database.py      41     13      8      2    65%   43-69, 186-187
+tests\__init__.py                       0      0      0      0   100%
+tests\conftest.py                      67     16      6      2    75%   14->17, 39->exit, 42-43, 62-65, 72-79, 86-98
+tests\test_auth.py                    361      2      8      2    99%   19, 600
+tests\test_cart.py                    174      2      4      2    98%   20, 296
+tests\test_products.py                 96      2      6      2    96%   19, 158
+-------------------------------------------------------------------------------
+TOTAL                                1148     39    134     12    96%

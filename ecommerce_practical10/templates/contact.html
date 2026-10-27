@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block title %}Help & Support - NexusMart{% endblock %}
+
+{% block content %}
+<div class="info-page-container">
+    <article class="info-article">
+        <h1>Customer Support & Help Center</h1>
+        <p class="text-muted" style="font-size: 1.05rem; margin-bottom: 2rem;">
+            Have questions about your order, shipping, or returns? We are here to help.
+        </p>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.5rem; margin-bottom: 2.5rem;">
+            <div style="padding: 1.5rem; border: 1px solid var(--border-color); border-radius: 8px; background: #f8fafc;">
+                <div style="font-size: 1.75rem; margin-bottom: 0.5rem;">📦</div>
+                <h3 style="font-size: 1.1rem; color: var(--text-main); margin-bottom: 0.5rem;">Track Your Order</h3>
+                <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 1rem;">View live order lifecycle status and receipts from your account.</p>
+                <a href="{{ url_for('orders_list') }}" class="btn btn-sm btn-outline">My Orders &rarr;</a>
+            </div>
+
+            <div style="padding: 1.5rem; border: 1px solid var(--border-color); border-radius: 8px; background: #f8fafc;">
+                <div style="font-size: 1.75rem; margin-bottom: 0.5rem;">💬</div>
+                <h3 style="font-size: 1.1rem; color: var(--text-main); margin-bottom: 0.5rem;">Email Support</h3>
+                <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 1rem;">Reach our customer care team directly. Response within 24 hours.</p>
+                <a href="mailto:support@nexusmart.local" class="btn btn-sm btn-primary">support@nexusmart.local</a>
+            </div>
+        </div>
+
+        <h2>Frequently Asked Questions</h2>
+        <div style="margin-top: 1rem;">
+            <h4 style="margin-bottom: 0.35rem; color: var(--text-main);">What payment methods are supported?</h4>
+            <p style="font-size: 0.95rem; color: var(--text-muted); margin-bottom: 1.25rem;">We accept all major credit and debit cards, UPI, net banking via Razorpay, and Cash on Delivery (COD).</p>
+
+            <h4 style="margin-bottom: 0.35rem; color: var(--text-main);">Can I cancel an order after placing it?</h4>
+            <p style="font-size: 0.95rem; color: var(--text-muted); margin-bottom: 1.25rem;">Yes, you can cancel any order directly from your Order Details page as long as it has not yet reached the dispatched/shipped stage.</p>
+
+            <h4 style="margin-bottom: 0.35rem; color: var(--text-main);">How do I use a discount coupon?</h4>
+            <p style="font-size: 0.95rem; color: var(--text-muted);">Enter your valid coupon code (e.g. <code>WELCOME10</code>) on the Checkout Review page and click Apply to recalculate your subtotal instantly.</p>
+        </div>
+    </article>
+</div>
+{% endblock %}

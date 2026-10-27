@@ -1,0 +1,44 @@
+{
+  "console_messages": [
+    {
+      "type": "warning",
+      "text": "Unrecognized feature: 'web-share'.",
+      "location": {
+        "url": "https://checkout.razorpay.com/v1/checkout.js",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "type": "warning",
+      "text": "Unrecognized feature: 'web-share'.",
+      "location": {
+        "url": "https://checkout.razorpay.com/v1/checkout.js",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "location": {
+        "url": "https://api.razorpay.com/v2/standard_checkout/preferences?key_id=rzp_test_mockkey123&session_token=ED598FE25CE2B62B8BE9917FDA8CC2A0AF61C307CE39FB5C8FCD6D4AAC2EC8E34ED27AABB4893808239113746566380A51D04840D933C61A22774F6656B65DA07305EA0FCDF0AEDD7889CF158AB1E52AE4E3F2D890567E0DC43592EA448F42D91C2404EA127C5A0D",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    }
+  ],
+  "network_errors": [
+    {
+      "url": "https://api.razorpay.com/v2/standard_checkout/preferences?key_id=rzp_test_mockkey123&session_token=ED598FE25CE2B62B8BE9917FDA8CC2A0AF61C307CE39FB5C8FCD6D4AAC2EC8E34ED27AABB4893808239113746566380A51D04840D933C61A22774F6656B65DA07305EA0FCDF0AEDD7889CF158AB1E52AE4E3F2D890567E0DC43592EA448F42D91C2404EA127C5A0D",
+      "status": 401,
+      "status_text": "Unauthorized"
+    }
+  ]
+}

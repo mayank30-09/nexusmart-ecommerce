@@ -1,0 +1,28 @@
+# NexusMart — Playwright Live Browser Screenshot Inventory
+
+**Execution Time**: 2026-10-27 20:43:23 UTC  
+**Target URL**: `http://127.0.0.1:5000`  
+**Total Screenshots Captured**: 20  
+
+| # | Screenshot File | User Journey / Scenario | Viewport | Verification Result |
+|---|---|---|---|---|
+| 01 | [`04-login-page.png`](file:///D:/AI-Workspace/projects/e-commerce-web/artifacts/deployment/screenshots/04-login-page.png ) | Customer Sign In page with email and Google OAuth option | 1440 × 900 (Desktop) | **VERIFIED PASS** |
+| 02 | [`13-about-page.png`](file:///D:/AI-Workspace/projects/e-commerce-web/artifacts/deployment/screenshots/13-about-page.png ) | About NexusMart corporate mission, values, and platform architecture | 1440 × 900 (Desktop) | **VERIFIED PASS** |
+| 03 | [`14-contact-page.png`](file:///D:/AI-Workspace/projects/e-commerce-web/artifacts/deployment/screenshots/14-contact-page.png ) | NexusMart Customer Care, Support FAQs, and Help Desk | 1440 × 900 (Desktop) | **VERIFIED PASS** |
+| 04 | [`04b-google-signin-redirect.png`](file:///D:/AI-Workspace/projects/e-commerce-web/artifacts/deployment/screenshots/04b-google-signin-redirect.png ) | Google OAuth 2.0 authorization redirect and consent handshake | 1440 × 900 (Desktop) | **VERIFIED PASS** |
+| 05 | [`05-registration-page.png`](file:///D:/AI-Workspace/projects/e-commerce-web/artifacts/deployment/screenshots/05-registration-page.png ) | Customer Registration form with validation fields | 1440 × 900 (Desktop) | **VERIFIED PASS** |
+| 06 | [`01-homepage-desktop.png`](file:///D:/AI-Workspace/projects/e-commerce-web/artifacts/deployment/screenshots/01-homepage-desktop.png ) | NexusMart Customer Dashboard with greeting, metrics, and shortcuts | 1440 × 900 (Desktop) | **VERIFIED PASS** |
+| 07 | [`02-product-catalog.png`](file:///D:/AI-Workspace/projects/e-commerce-web/artifacts/deployment/screenshots/02-product-catalog.png ) | Product Catalog with Category badges, prices in INR, and search filters | 1440 × 900 (Desktop) | **VERIFIED PASS** |
+| 08 | [`03-product-detail.png`](file:///D:/AI-Workspace/projects/e-commerce-web/artifacts/deployment/screenshots/03-product-detail.png ) | Product Detail page with high-res badge, stock counter, and quantity controls | 1440 × 900 (Desktop) | **VERIFIED PASS** |
+| 09 | [`06-cart.png`](file:///D:/AI-Workspace/projects/e-commerce-web/artifacts/deployment/screenshots/06-cart.png ) | Shopping Cart showing line items, quantity modifiers, subtotal, and checkout CTA | 1440 × 900 (Desktop) | **VERIFIED PASS** |
+| 10 | [`12-customer-profile-addresses.png`](file:///D:/AI-Workspace/projects/e-commerce-web/artifacts/deployment/screenshots/12-customer-profile-addresses.png ) | Customer Profile with saved shipping addresses, default badge, and edit actions | 1440 × 900 (Desktop) | **VERIFIED PASS** |
+| 11 | [`07-checkout.png`](file:///D:/AI-Workspace/projects/e-commerce-web/artifacts/deployment/screenshots/07-checkout.png ) | Checkout Review page with selected address, 10% coupon discount applied, and payment selection | 1440 × 900 (Desktop) | **VERIFIED PASS** |
+| 12 | [`08-razorpay-test-checkout.png`](file:///D:/AI-Workspace/projects/e-commerce-web/artifacts/deployment/screenshots/08-razorpay-test-checkout.png ) | Official Razorpay Standard Checkout launch modal with order reference and secure encryption | 1440 × 900 (Desktop) | **VERIFIED PASS** |
+| 13 | [`08b-payment-failed-result.png`](file:///D:/AI-Workspace/projects/e-commerce-web/artifacts/deployment/screenshots/08b-payment-failed-result.png ) | Payment Verification Rejection: invalid signature safely blocked with cart preserved | 1440 × 900 (Desktop) | **VERIFIED PASS** |
+| 14 | [`09-order-confirmation.png`](file:///D:/AI-Workspace/projects/e-commerce-web/artifacts/deployment/screenshots/09-order-confirmation.png ) | Order Confirmation invoice with verified payment status, reference code, and delivery summary | 1440 × 900 (Desktop) | **VERIFIED PASS** |
+| 15 | [`10-order-history.png`](file:///D:/AI-Workspace/projects/e-commerce-web/artifacts/deployment/screenshots/10-order-history.png ) | Customer Order History table with order status Confirmed and payment status Paid | 1440 × 900 (Desktop) | **VERIFIED PASS** |
+| 16 | [`11-order-detail.png`](file:///D:/AI-Workspace/projects/e-commerce-web/artifacts/deployment/screenshots/11-order-detail.png ) | Detailed Order Breakdown with immutable snapshots of items, coupon code, and shipping address | 1440 × 900 (Desktop) | **VERIFIED PASS** |
+| 17 | [`16-mobile-catalog.png`](file:///D:/AI-Workspace/projects/e-commerce-web/artifacts/deployment/screenshots/16-mobile-catalog.png ) | Responsive Mobile Catalog with touch-friendly cards and adaptive grid | 390 × 844 (Mobile) | **VERIFIED PASS** |
+| 18 | [`18-mobile-product-detail.png`](file:///D:/AI-Workspace/projects/e-commerce-web/artifacts/deployment/screenshots/18-mobile-product-detail.png ) | Responsive Mobile Product Details with single-column touch controls | 390 × 844 (Mobile) | **VERIFIED PASS** |
+| 19 | [`15-mobile-homepage.png`](file:///D:/AI-Workspace/projects/e-commerce-web/artifacts/deployment/screenshots/15-mobile-homepage.png ) | Responsive Mobile Article & Policy layout without horizontal overflow | 390 × 844 (Mobile) | **VERIFIED PASS** |
+| 20 | [`17-mobile-checkout.png`](file:///D:/AI-Workspace/projects/e-commerce-web/artifacts/deployment/screenshots/17-mobile-checkout.png ) | Responsive Mobile Checkout review with stacked address and payment cards | 390 × 844 (Mobile) | **VERIFIED PASS** |

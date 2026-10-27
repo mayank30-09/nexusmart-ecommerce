@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block title %}Privacy Policy - NexusMart{% endblock %}
+
+{% block content %}
+<div class="info-page-container">
+    <article class="info-article">
+        <h1>Privacy Policy</h1>
+        <p class="text-muted" style="margin-bottom: 2rem;">Last Updated: October 2026</p>
+
+        <h2>1. Information We Collect</h2>
+        <p>
+            NexusMart collects minimal information necessary to deliver and fulfill your purchases:
+        </p>
+        <ul style="margin-left: 1.5rem; margin-bottom: 1.5rem; color: #334155;">
+            <li><strong>Account Details:</strong> Name, verified email address, and cryptographically hashed passwords.</li>
+            <li><strong>Shipping Data:</strong> Delivery addresses, recipient names, telephone contact, city, state, and postal pin code.</li>
+            <li><strong>Transaction Records:</strong> Order reference codes, itemized purchased products, pricing snapshots, and gateway transaction identifiers.</li>
+        </ul>
+
+        <h2>2. Payment Information Security</h2>
+        <p>
+            <strong>We do not store or process payment card numbers, CVVs, or net banking passwords.</strong> Online payments are processed directly through certified, PCI-DSS compliant payment gateways (Razorpay). Only non-sensitive transaction tokens, payment IDs, and completion statuses are shared with our servers.
+        </p>
+
+        <h2>3. Use of Information</h2>
+        <p>
+            Your information is used strictly to authenticate your account, fulfill orders, deliver order notifications, calculate eligible promotional discounts, and prevent fraudulent transactions. We never sell or rent your personal information to third parties.
+        </p>
+
+        <h2>4. Data Retention & Cookies</h2>
+        <p>
+            We use secure, HTTP-only session cookies to maintain your login status and protect against Cross-Site Request Forgery (CSRF). Session data is stored on secure, authenticated server infrastructure.
+        </p>
+
+        <h2>5. Contact Data Privacy Officer</h2>
+        <p>
+            For questions regarding your data privacy or to request account deletion, please contact us at <a href="mailto:privacy@nexusmart.local">privacy@nexusmart.local</a>.
+        </p>
+    </article>
+</div>
+{% endblock %}

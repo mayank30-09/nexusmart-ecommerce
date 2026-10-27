@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+
+{% block title %}{{ product['name'] }} - NexusMart{% endblock %}
+
+{% block content %}
+<div class="product-detail-container">
+    <!-- Breadcrumb Navigation -->
+    <nav class="breadcrumb-nav" aria-label="Breadcrumb">
+        <a href="{{ url_for('products') }}" class="back-link" id="link-back-products">&larr; Back to Catalog</a>
+        <span class="breadcrumb-separator">/</span>
+        <span class="breadcrumb-category">{{ product['category'] }}</span>
+        <span class="breadcrumb-separator">/</span>
+        <span class="breadcrumb-current">{{ product['name'] }}</span>
+    </nav>
+
+    <!-- Main Product Detail Card -->
+    <div class="product-detail-card" id="product-detail-card-{{ product['id'] }}">
+        <!-- Left: Visual / Image Section -->
+        <div class="product-detail-visual">
+            {% if 'image' in product.keys() and product['image'] %}
+                <img src="{{ product['image'] }}" alt="{{ product['name'] }}" class="product-detail-img" id="product-detail-image">
+            {% else %}
+                <div class="product-detail-placeholder" aria-label="{{ product['name'] }}">
+                    <span class="placeholder-icon">
+                        {% if product['category'] == 'Electronics' %}🎧
+                        {% elif product['category'] == 'Clothing' %}👕
+                        {% elif product['category'] == 'Footwear' %}👟
+                        {% elif product['category'] == 'Accessories' %}🕶️
+                        {% elif product['category'] == 'Bags' %}🎒
+                        {% else %}📦{% endif %}
+                    </span>
+                    <span class="placeholder-category">{{ product['category'] }} Collection</span>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Right: Information & Actions Section -->
+        <div class="product-detail-info">
+            <span class="product-category-tag" id="product-detail-category">{{ product['category'] }}</span>
+            <h1 class="product-detail-title" id="product-detail-name">{{ product['name'] }}</h1>
+            
+            <div class="product-detail-price" id="product-detail-price">
+                ₹{{ "%.2f"|format(product['price']) }}
+            </div>
+
+            <div class="product-detail-stock">
+                {% if product['stock'] > 10 %}
+                    <span class="stock-badge stock-in" id="product-detail-stock">In Stock ({{ product['stock'] }} units available)</span>
+                {% elif product['stock'] > 0 %}
+                    <span class="stock-badge stock-low" id="product-detail-stock">Low Stock (Only {{ product['stock'] }} units left)</span>
+                {% else %}
+                    <span class="stock-badge stock-out" id="product-detail-stock">Out of Stock</span>
+                {% endif %}
+            </div>
+
+            <div class="product-detail-description">
+                <h3>Product Overview</h3>
+                <p id="product-detail-desc">{{ product['description'] }}</p>
+            </div>
+
+            <!-- Product Specs Table -->
+            <table class="product-specs-table" aria-label="Product Specifications">
+                <tbody>
+                    <tr>
+                        <th scope="row">Item Code</th>
+                        <td>#NXM-{{ product['id'] }}</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Category</th>
+                        <td>{{ product['category'] }}</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Delivery</th>
+                        <td>Standard 2-4 business days express dispatch</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Warranty & Returns</th>
+                        <td>7-day replacement guarantee against defects</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <!-- Add to Cart Form -->
+            {% if product['stock'] > 0 %}
+                <form method="POST" action="{{ url_for('add_to_cart') }}" class="product-detail-form" id="product-detail-cart-form">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                    <input type="hidden" name="product_id" value="{{ product['id'] }}">
+
+                    <div class="quantity-selector-group">
+                        <label for="detail-quantity">Quantity:</label>
+                        <input 
+                            type="number" 
+                            id="detail-quantity" 
+                            name="quantity" 
+                            value="1" 
+                            min="1" 
+                            max="{{ product['stock'] }}" 
+                            class="quantity-input" 
+                            required
+                        >
+                        <span class="quantity-max-hint">(Max: {{ product['stock'] }})</span>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary btn-lg" id="btn-detail-add-cart">
+                        🛒 Add to Shopping Cart
+                    </button>
+                </form>
+            {% else %}
+                <div class="out-of-stock-notice" id="detail-out-of-stock">
+                    <p>⚠️ This product is currently out of stock. Please check back later.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

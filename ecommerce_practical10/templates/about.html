@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block title %}About Us - NexusMart{% endblock %}
+
+{% block content %}
+<div class="info-page-container">
+    <article class="info-article">
+        <h1>About NexusMart</h1>
+        <p class="text-muted" style="font-size: 1.05rem; margin-bottom: 2rem;">
+            Empowering smart lifestyles with curated technology, apparel, and daily essentials.
+        </p>
+
+        <h2>Our Mission</h2>
+        <p>
+            At NexusMart, our mission is to bring together modern design, high functional reliability, and accessible pricing across everyday lifestyle and consumer technology categories. We believe online shopping should be seamless, transparent, and built on trust.
+        </p>
+
+        <h2>Curated Categories</h2>
+        <p>
+            We focus on five core essentials designed for active urban living:
+        </p>
+        <ul style="margin-left: 1.5rem; margin-bottom: 1.5rem; color: #334155;">
+            <li><strong>Electronics & Audio:</strong> High-performance noise-canceling headphones, fitness smartwatches, and smart peripherals.</li>
+            <li><strong>Fashion & Apparel:</strong> Breathable cotton daily basics, stretch denim, and contemporary casual wear.</li>
+            <li><strong>Footwear:</strong> Engineered running shoes, lightweight trainers, and vulcanized canvas sneakers.</li>
+            <li><strong>Accessories:</strong> Polarized eyewear and precision stainless steel timepieces.</li>
+            <li><strong>Bags & Travel Gear:</strong> Weather-resistant laptop bags and weekend utility duffels.</li>
+        </ul>
+
+        <h2>Commitment to Transparency</h2>
+        <p>
+            NexusMart is built with customer privacy and transaction safety at its core. We calculate transparent pricing in Indian Rupees (₹), enforce zero hidden checkout charges, and partner with industry-standard payment processors to protect your financial credentials.
+        </p>
+
+        <div style="margin-top: 2.5rem; padding-top: 1.5rem; border-top: 1px solid var(--border-color); display: flex; gap: 1rem;">
+            <a href="{{ url_for('products') }}" class="btn btn-primary">Browse Our Catalog &rarr;</a>
+            <a href="{{ url_for('contact') }}" class="btn btn-outline">Contact Support</a>
+        </div>
+    </article>
+</div>
+{% endblock %}

@@ -4,14 +4,20 @@
 
 {% block content %}
 <div class="checkout-container">
-    <div class="checkout-header">
+    <div class="checkout-header" style="border-bottom: 1px solid var(--border-color); padding-bottom: 1.5rem; margin-bottom: 2rem;">
+        <div style="font-size: 0.8rem; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 0.25rem;">
+            Order Finalization
+        </div>
         <h1>Order Checkout Review</h1>
-        <p>Verify delivery address, review item quantities and pricing, and apply eligible discount coupons before placing your order.</p>
+        <p style="margin: 0; max-width: 680px;">Confirm your shipping destination, review itemized line items, and apply valid promotional vouchers before completing payment.</p>
     </div>
 
     {% if has_stock_issues %}
         <div class="alert alert-warning" role="alert" style="margin-bottom: 1.5rem;">
-            ⚠️ <strong>Inventory Alert:</strong> One or more items in your cart exceed currently available warehouse stock. Please review before proceeding.
+            <span class="alert-icon">⚠️</span>
+            <div class="alert-content">
+                <strong>Inventory Alert:</strong> One or more items in your cart exceeds available stock. Please review before proceeding.
+            </div>
         </div>
     {% endif %}
 
@@ -19,9 +25,12 @@
         <!-- Left Column: Shipping Address & Order Items -->
         <div class="checkout-main-col">
             <!-- 1. Delivery Address Card -->
-            <div class="profile-card" id="checkout-address-card" style="margin-bottom: 1.5rem;">
+            <div class="profile-card" id="checkout-address-card" style="margin-bottom: 1.75rem;">
                 <div class="card-header-row" style="margin-bottom: 1rem;">
-                    <h2>📍 Delivery Address</h2>
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <span style="font-size: 1.25rem;">📍</span>
+                        <h2 style="font-size: 1.2rem; margin: 0;">Delivery Destination</h2>
+                    </div>
                     <a href="{{ url_for('profile') }}" class="btn btn-sm btn-outline" id="link-manage-addresses">
                         Manage Addresses
                     </a>
@@ -31,30 +40,30 @@
                     {% if selected_address %}
                         <div class="selected-address-box" id="selected-address-display">
                             <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.5rem;">
-                                <span class="default-address-pill" style="background: #e0f2fe; color: #0369a1;">
-                                    Selected Destination
+                                <span class="default-address-pill" style="background: var(--info-bg); color: var(--info); border: 1px solid var(--info-border);">
+                                    Active Delivery Destination
                                 </span>
                                 {% if selected_address['is_default'] %}
-                                    <span class="default-address-pill">Default Address</span>
+                                    <span class="default-address-pill">★ Default Address</span>
                                 {% endif %}
                             </div>
                             <div class="address-line-text" id="selected-address-line">
                                 <strong>{{ selected_address['address_line'] }}</strong>
                             </div>
                             <div class="address-sub-text" id="selected-address-details">
-                                {{ selected_address['city'] }}, {{ selected_address['state'] }} - {{ selected_address['postal_code'] }}
+                                {{ selected_address['city'] }}, {{ selected_address['state'] }} - <span style="font-family: var(--font-mono); font-weight: 600;">{{ selected_address['postal_code'] }}</span>
                             </div>
                         </div>
                     {% endif %}
 
                     {% if addresses|length > 1 %}
-                        <form method="POST" action="{{ url_for('checkout_select_address') }}" class="address-switch-form" id="checkout-address-select-form" style="margin-top: 1rem;">
+                        <form method="POST" action="{{ url_for('checkout_select_address') }}" class="address-switch-form" id="checkout-address-select-form" style="margin-top: 1.25rem;">
                             <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
                             <label for="address-select-dropdown" style="font-size: 0.85rem; font-weight: 600; color: var(--text-muted); display: block; margin-bottom: 0.35rem;">
-                                Choose a different delivery address:
+                                Select alternate delivery destination:
                             </label>
                             <div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
-                                <select name="address_id" id="address-select-dropdown" class="filter-input" style="flex: 1; min-width: 220px;" required>
+                                <select name="address_id" id="address-select-dropdown" class="filter-input" style="flex: 1; min-width: 240px;" required>
                                     {% for addr in addresses %}
                                         <option value="{{ addr['id'] }}" {% if selected_address and selected_address['id'] == addr['id'] %}selected{% endif %}>
                                             {{ addr['address_line'] }}, {{ addr['city'] }} ({{ addr['postal_code'] }}){% if addr['is_default'] %} [Default]{% endif %}
@@ -62,27 +71,33 @@
                                     {% endfor %}
                                 </select>
                                 <button type="submit" class="btn btn-secondary btn-sm" id="btn-select-address">
-                                    Change Address
+                                    Switch Address
                                 </button>
                             </div>
                         </form>
                     {% endif %}
                 {% else %}
                     <div class="alert alert-warning" style="margin: 0;" id="no-address-alert">
-                        <p style="margin-bottom: 0.75rem;"><strong>No delivery addresses found.</strong> Please add a shipping address in your profile before completing your order.</p>
-                        <a href="{{ url_for('profile') }}" class="btn btn-primary btn-sm" id="btn-add-address-profile">
-                            + Add Shipping Address
-                        </a>
+                        <span class="alert-icon">⚠️</span>
+                        <div class="alert-content">
+                            <p style="margin-bottom: 0.75rem;"><strong>No delivery addresses found.</strong> Please add a shipping destination to complete your purchase.</p>
+                            <a href="{{ url_for('profile') }}" class="btn btn-primary btn-sm" id="btn-add-address-profile">
+                                + Add Shipping Address
+                            </a>
+                        </div>
                     </div>
                 {% endif %}
             </div>
 
             <!-- 2. Itemized Order Review Card -->
             <div class="profile-card" id="checkout-items-card">
-                <div class="card-header-row" style="margin-bottom: 1rem;">
-                    <h2>📦 Review Order Items ({{ items|length }})</h2>
+                <div class="card-header-row" style="margin-bottom: 1.25rem;">
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <span style="font-size: 1.25rem;">📦</span>
+                        <h2 style="font-size: 1.2rem; margin: 0;">Purchased Items ({{ items|length }})</h2>
+                    </div>
                     <a href="{{ url_for('view_cart') }}" class="btn btn-sm btn-outline" id="btn-edit-cart">
-                        &larr; Edit Cart
+                        &larr; Modify Cart
                     </a>
                 </div>
 
@@ -101,13 +116,13 @@
                             {% for item in items %}
                                 <tr id="checkout-item-row-{{ item['cart_item_id'] }}">
                                     <td>
-                                        <strong>{{ item['name'] }}</strong>
+                                        <strong style="color: var(--text-main);">{{ item['name'] }}</strong>
                                         {% if item['stock_exceeded'] %}
-                                            <div style="color: var(--danger); font-size: 0.78rem; font-weight: 600;">
-                                                ⚠️ Exceeds stock ({{ item['stock'] }} available)
+                                            <div style="color: var(--danger); font-size: 0.78rem; font-weight: 600; margin-top: 2px;">
+                                                ⚠️ Exceeds warehouse stock ({{ item['stock'] }} available)
                                             </div>
                                         {% else %}
-                                            <div style="color: var(--text-muted); font-size: 0.78rem;">
+                                            <div style="color: var(--text-subtle); font-size: 0.78rem; margin-top: 2px;">
                                                 Stock: {{ item['stock'] }} units
                                             </div>
                                         {% endif %}
@@ -115,12 +130,12 @@
                                     <td>
                                         <span class="product-category-tag" style="margin: 0;">{{ item['category'] }}</span>
                                     </td>
-                                    <td>₹{{ "%.2f"|format(item['price']) }}</td>
+                                    <td style="font-family: var(--font-mono); font-weight: 600;">₹{{ "%.2f"|format(item['price']) }}</td>
                                     <td>
                                         <span class="badge-qty" id="item-qty-{{ item['cart_item_id'] }}">{{ item['quantity'] }}</span>
                                     </td>
-                                    <td style="text-align: right;">
-                                        <strong style="color: var(--primary);">₹{{ "%.2f"|format(item['subtotal']) }}</strong>
+                                    <td style="text-align: right; font-family: var(--font-mono); font-weight: 700; color: var(--accent);">
+                                        ₹{{ "%.2f"|format(item['subtotal']) }}
                                     </td>
                                 </tr>
                             {% endfor %}
@@ -133,39 +148,39 @@
         <!-- Right Column: Financial Summary & Discount Coupon -->
         <div class="checkout-side-col">
             <!-- Order Financial Summary Card -->
-            <div class="profile-card checkout-summary-card" id="checkout-financial-summary">
-                <h2 style="font-size: 1.15rem; margin-bottom: 1.25rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.75rem;">
+            <div class="checkout-summary-card" id="checkout-financial-summary">
+                <h2 style="font-size: 1.2rem; margin-bottom: 1.25rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.75rem;">
                     Payment Summary
                 </h2>
 
                 <div class="summary-line-row">
-                    <span class="summary-label">Cart Subtotal:</span>
+                    <span class="summary-label">Items Subtotal:</span>
                     <span class="summary-value" id="checkout-subtotal">₹{{ "%.2f"|format(subtotal) }}</span>
                 </div>
 
                 {% if coupon %}
-                    <div class="summary-line-row discount-row" style="color: var(--success); font-weight: 500;">
-                        <span class="summary-label">
+                    <div class="summary-line-row discount-row" style="color: var(--success); font-weight: 600;">
+                        <span class="summary-label" style="display: flex; align-items: center; gap: 0.35rem;">
                             Coupon Discount (<strong>{{ coupon['code'] }}</strong>):
                             <form method="POST" action="{{ url_for('remove_coupon') }}" style="display: inline; margin-left: 4px;">
                                 <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-                                <button type="submit" class="btn-remove-coupon-tag" id="btn-remove-applied-coupon" title="Remove Coupon">
+                                <button type="submit" class="btn-remove-coupon-tag" id="btn-remove-applied-coupon" title="Remove coupon">
                                     ✕
                                 </button>
                             </form>
                         </span>
-                        <span class="summary-value" id="checkout-discount-amount">-₹{{ "%.2f"|format(discount) }}</span>
+                        <span class="summary-value" id="checkout-discount-amount" style="color: var(--success);">-₹{{ "%.2f"|format(discount) }}</span>
                     </div>
                 {% else %}
-                    <div class="summary-line-row" style="color: var(--text-muted); font-size: 0.9rem;">
-                        <span class="summary-label">Coupon Discount:</span>
+                    <div class="summary-line-row" style="color: var(--text-subtle); font-size: 0.9rem;">
+                        <span class="summary-label">Promotional Discount:</span>
                         <span class="summary-value" id="checkout-no-discount">₹0.00</span>
                     </div>
                 {% endif %}
 
-                <div class="summary-line-row" style="color: var(--text-muted); font-size: 0.9rem;">
-                    <span class="summary-label">Estimated Delivery:</span>
-                    <span class="summary-value" style="color: var(--success); font-weight: 600;">FREE</span>
+                <div class="summary-line-row" style="font-size: 0.9rem;">
+                    <span class="summary-label">Standard Delivery:</span>
+                    <span class="summary-value" style="color: var(--success); font-weight: 700;">FREE</span>
                 </div>
 
                 <div class="summary-divider"></div>
@@ -179,8 +194,8 @@
                 <div class="coupon-box" style="margin-top: 1.5rem; padding-top: 1.25rem; border-top: 1px dashed var(--border-color);">
                     <form method="POST" action="{{ url_for('apply_coupon') }}" id="form-apply-coupon">
                         <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-                        <label for="coupon-code-input" style="font-size: 0.85rem; font-weight: 600; color: var(--text-main); display: block; margin-bottom: 0.35rem;">
-                            🏷️ Have a Promo / Coupon Code?
+                        <label for="coupon-code-input" style="font-size: 0.85rem; font-weight: 600; color: var(--text-main); display: block; margin-bottom: 0.4rem;">
+                            🏷️ Promotional Code
                         </label>
                         <div style="display: flex; gap: 0.5rem;">
                             <input 
@@ -188,8 +203,8 @@
                                 name="coupon_code" 
                                 id="coupon-code-input" 
                                 class="filter-input" 
-                                placeholder="Enter code (e.g. WELCOME10)" 
-                                style="text-transform: uppercase; flex: 1;" 
+                                placeholder="e.g. WELCOME10" 
+                                style="text-transform: uppercase; flex: 1; font-family: var(--font-mono); font-weight: 600;" 
                                 maxlength="30"
                                 required
                             >
@@ -198,12 +213,12 @@
                             </button>
                         </div>
                     </form>
-                    <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.5rem;">
-                        Try <code>WELCOME10</code> (10% off on ₹500+) or <code>FLAT200</code> (₹200 off on ₹1000+).
+                    <p style="font-size: 0.78rem; color: var(--text-subtle); margin-top: 0.5rem; line-height: 1.4;">
+                        Available: <code>WELCOME10</code> (10% off) or <code>FLAT200</code> (₹200 off).
                     </p>
                 </div>
 
-                <!-- Phase 3 Transactional Order Placement & Simulated Payment -->
+                <!-- Payment Selection & Order Placement Form -->
                 <form method="POST" action="{{ url_for('place_order') }}" id="form-place-order" style="margin-top: 1.5rem; padding-top: 1.25rem; border-top: 1px solid var(--border-color);">
                     <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
                     <input type="hidden" name="idempotency_key" value="{{ session.get('checkout_idempotency_key', '') }}">
@@ -211,42 +226,41 @@
                         <input type="hidden" name="address_id" value="{{ selected_address['id'] }}">
                     {% endif %}
 
-                    <h3 style="font-size: 0.95rem; font-weight: 700; margin-bottom: 0.75rem; color: var(--text-main);">
+                    <h3 style="font-size: 0.95rem; font-weight: 700; margin-bottom: 0.85rem; color: var(--text-main);">
                         💳 Select Payment Method
                     </h3>
 
-                    <div class="payment-options-group" style="display: flex; flex-direction: column; gap: 0.6rem; margin-bottom: 1rem;">
-                        <label class="payment-option-label" style="display: flex; align-items: flex-start; gap: 0.6rem; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 8px; cursor: pointer; background: #fff;">
+                    <div class="payment-options-group" style="display: flex; flex-direction: column; gap: 0.65rem; margin-bottom: 1.25rem;">
+                        <label class="payment-option-label">
                             <input type="radio" name="payment_method" value="razorpay" id="payment-method-razorpay" checked onchange="toggleMockOnlineControls(false)">
                             <div>
-                                <strong style="display: block; font-size: 0.9rem; color: var(--primary);">⚡ Razorpay Secure Checkout (UPI, Cards, NetBanking)</strong>
-                                <span style="font-size: 0.78rem; color: var(--text-muted); display: block;">Official Razorpay payment gateway. Instant UPI, Debit/Credit cards, NetBanking.</span>
+                                <strong style="display: block; font-size: 0.92rem; color: var(--accent);">⚡ Razorpay Secure Checkout</strong>
+                                <span style="font-size: 0.8rem; color: var(--text-muted); display: block;">Instant UPI, Debit/Credit Cards & NetBanking via Razorpay.</span>
                             </div>
                         </label>
 
-                        <label class="payment-option-label" style="display: flex; align-items: flex-start; gap: 0.6rem; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 8px; cursor: pointer; background: #fff;">
+                        <label class="payment-option-label">
                             <input type="radio" name="payment_method" value="cod" id="payment-method-cod" onchange="toggleMockOnlineControls(false)">
                             <div>
-                                <strong style="display: block; font-size: 0.9rem;">💵 Cash on Delivery (COD)</strong>
-                                <span style="font-size: 0.78rem; color: var(--text-muted); display: block;">Pay with cash upon order delivery at your doorstep.</span>
+                                <strong style="display: block; font-size: 0.92rem;">💵 Cash on Delivery (COD)</strong>
+                                <span style="font-size: 0.8rem; color: var(--text-muted); display: block;">Settle payment in cash upon doorstep delivery.</span>
                             </div>
                         </label>
 
                         {% if mock_payment_enabled %}
-                            <label class="payment-option-label" style="display: flex; align-items: flex-start; gap: 0.6rem; padding: 0.75rem; border: 1px dashed var(--border-color); border-radius: 8px; cursor: pointer; background: #fdfefe;">
+                            <label class="payment-option-label" style="border-style: dashed; background: var(--surface-subtle);">
                                 <input type="radio" name="payment_method" value="mock_online" id="payment-method-mock-online" onchange="toggleMockOnlineControls(true)">
                                 <div>
-                                    <strong style="display: block; font-size: 0.9rem; color: #64748b;">🧪 Test Simulator (Dev / Test Mode Only)</strong>
-                                    <span style="font-size: 0.78rem; color: var(--text-muted); display: block;">Simulate instant approval or decline for test cases.</span>
+                                    <strong style="display: block; font-size: 0.92rem; color: var(--text-muted);">🧪 Developer Simulation Sandbox</strong>
+                                    <span style="font-size: 0.8rem; color: var(--text-subtle); display: block;">Simulate instant approval or bank decline for test cases.</span>
                                 </div>
                             </label>
 
-                            <!-- Mock Online Simulation Controls -->
-                            <div id="mock-online-controls" style="display: none; margin-top: 0.5rem; margin-bottom: 0.5rem; padding: 0.75rem; background: #f8fafc; border: 1px dashed var(--border-color); border-radius: 6px;">
-                                <label for="simulated-outcome-select" style="display: block; font-size: 0.8rem; font-weight: 600; margin-bottom: 0.35rem; color: var(--text-muted);">
+                            <div id="mock-online-controls" style="display: none; padding: 0.85rem; background: var(--surface-card); border: 1px dashed var(--border-color); border-radius: var(--radius-sm); margin-bottom: 0.5rem;">
+                                <label for="simulated-outcome-select" style="display: block; font-size: 0.82rem; font-weight: 600; margin-bottom: 0.35rem; color: var(--text-muted);">
                                     🧪 Simulation Outcome:
                                 </label>
-                                <select name="simulated_outcome" id="simulated-outcome-select" class="filter-input" style="width: 100%; font-size: 0.85rem; padding: 0.4rem;">
+                                <select name="simulated_outcome" id="simulated-outcome-select" class="filter-input" style="width: 100%; font-size: 0.88rem; padding: 0.45rem;">
                                     <option value="success" selected>✅ Successful Payment (Approved)</option>
                                     <option value="failure">❌ Failed Payment (Declined / Bank Error)</option>
                                 </select>
@@ -256,25 +270,25 @@
 
                     <!-- Submit / Place Order Button -->
                     {% if not addresses or not selected_address %}
-                        <button type="button" class="btn btn-primary btn-block btn-lg" disabled id="btn-place-order" style="width: 100%; opacity: 0.6; cursor: not-allowed;" title="Please add a shipping address first">
+                        <button type="button" class="btn btn-primary btn-block btn-lg btn-disabled" id="btn-place-order" title="Please add a shipping address first">
                             🔒 Add Address to Place Order
                         </button>
-                        <p style="font-size: 0.75rem; color: var(--danger); text-align: center; margin-top: 0.4rem;">
-                            ⚠️ Please add or select a delivery address above.
+                        <p style="font-size: 0.78rem; color: var(--danger); text-align: center; margin-top: 0.5rem;">
+                            ⚠️ Please add or select a shipping destination above.
                         </p>
                     {% elif has_stock_issues %}
-                        <button type="button" class="btn btn-primary btn-block btn-lg" disabled id="btn-place-order" style="width: 100%; opacity: 0.6; cursor: not-allowed;" title="Cart contains out of stock items">
+                        <button type="button" class="btn btn-primary btn-block btn-lg btn-disabled" id="btn-place-order" title="Cart contains out of stock items">
                             ⚠️ Fix Stock Issues to Proceed
                         </button>
-                        <p style="font-size: 0.75rem; color: var(--danger); text-align: center; margin-top: 0.4rem;">
+                        <p style="font-size: 0.78rem; color: var(--danger); text-align: center; margin-top: 0.5rem;">
                             ⚠️ Please adjust item quantities in cart to match warehouse stock.
                         </p>
                     {% else %}
-                        <button type="submit" class="btn btn-primary btn-block btn-lg" id="btn-place-order" style="width: 100%;">
+                        <button type="submit" class="btn btn-primary btn-block btn-lg" id="btn-place-order">
                             Proceed to Payment &amp; Place Order (₹{{ "%.2f"|format(final_total) }}) &rarr;
                         </button>
-                        <p style="font-size: 0.75rem; color: var(--text-muted); text-align: center; margin-top: 0.5rem;">
-                            🔒 Atomic transaction with concurrency &amp; duplicate protection.
+                        <p style="font-size: 0.78rem; color: var(--text-subtle); text-align: center; margin-top: 0.6rem;">
+                            🔒 256-Bit SSL Encrypted. Concurrency &amp; Idempotency protected.
                         </p>
                     {% endif %}
                 </form>

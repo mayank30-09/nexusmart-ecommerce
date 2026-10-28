@@ -5,10 +5,12 @@ schema migration, and product seeding for NexusMart E-Commerce.
 
 import os
 import re
+import sys
 import sqlite3
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-SQLITE_DB_PATH = os.path.join(BASE_DIR, "ecommerce.db")
+DB_PATH = os.path.join(BASE_DIR, "ecommerce.db")
+SQLITE_DB_PATH = DB_PATH
 
 
 class PostgresCursorWrapper:
@@ -152,8 +154,9 @@ def get_db_connection():
         raw_conn = psycopg2.connect(database_url)
         return PostgresConnectionWrapper(raw_conn)
 
-    # Default: Local SQLite database
-    conn = sqlite3.connect(SQLITE_DB_PATH)
+    # Default: Local SQLite database (resolves DB_PATH dynamically for isolated test fixtures)
+    active_sqlite_path = getattr(sys.modules[__name__], "DB_PATH", SQLITE_DB_PATH)
+    conn = sqlite3.connect(active_sqlite_path)
     conn.execute("PRAGMA foreign_keys = ON;")
     conn.row_factory = sqlite3.Row
     return conn
@@ -177,105 +180,119 @@ def init_db():
 
     conn.commit()
 
-    # Check and seed initial products if catalog is empty
-    count_row = conn.execute("SELECT COUNT(*) AS count FROM products;").fetchone()
-    count = count_row["count"] if count_row else 0
+    # Check and seed initial products if missing
+    sample_products = [
+        (
+            "Noise-Canceling Wireless Headphones",
+            "Electronics",
+            2999.00,
+            15,
+            "Over-ear Bluetooth headphones with active noise cancellation and 30-hour battery life."
+        ),
+        (
+            "Smart Fitness Tracker Watch",
+            "Electronics",
+            1899.00,
+            20,
+            "Waterproof smartwatch featuring continuous heart rate monitoring and OLED touch display."
+        ),
+        (
+            "Classic Cotton Crewneck T-Shirt",
+            "Clothing",
+            499.00,
+            35,
+            "100% breathable organic cotton daily wear t-shirt with premium stitching."
+        ),
+        (
+            "Slim Fit Stretch Denim Jeans",
+            "Clothing",
+            1299.00,
+            25,
+            "Durable and comfortable dark indigo denim jeans with flexible stretch fabric."
+        ),
+        (
+            "Lightweight Running Sports Shoes",
+            "Footwear",
+            1799.00,
+            18,
+            "Breathable mesh athletic shoes with shock-absorbing EVA sole for daily running."
+        ),
+        (
+            "Casual Canvas Low-Top Sneakers",
+            "Footwear",
+            899.00,
+            22,
+            "Classic street-style vulcanized rubber sole sneakers for everyday comfort."
+        ),
+        (
+            "UV-Protected Polarized Sunglasses",
+            "Accessories",
+            699.00,
+            30,
+            "Unisex polarized sunglasses with anti-glare coating and lightweight alloy frame."
+        ),
+        (
+            "Minimalist Stainless Steel Wristwatch",
+            "Accessories",
+            1499.00,
+            12,
+            "Sleek analog quartz watch with scratch-resistant mineral glass and metal strap."
+        ),
+        (
+            "Water-Resistant Laptop Backpack",
+            "Bags",
+            1199.00,
+            16,
+            "Spacious multi-compartment travel backpack with dedicated 15.6-inch padded laptop sleeve."
+        ),
+        (
+            "Multi-Utility Canvas Duffel Bag",
+            "Bags",
+            999.00,
+            14,
+            "Sturdy weekend travel bag with reinforced handles and detachable shoulder strap."
+        )
+    ]
 
-    if count == 0:
-        sample_products = [
-            (
-                "Noise-Canceling Wireless Headphones",
-                "Electronics",
-                2999.00,
-                15,
-                "Over-ear Bluetooth headphones with active noise cancellation and 30-hour battery life."
-            ),
-            (
-                "Smart Fitness Tracker Watch",
-                "Electronics",
-                1899.00,
-                20,
-                "Waterproof smartwatch featuring continuous heart rate monitoring and OLED touch display."
-            ),
-            (
-                "Classic Cotton Crewneck T-Shirt",
-                "Clothing",
-                499.00,
-                35,
-                "100% breathable organic cotton daily wear t-shirt with premium stitching."
-            ),
-            (
-                "Slim Fit Stretch Denim Jeans",
-                "Clothing",
-                1299.00,
-                25,
-                "Durable and comfortable dark indigo denim jeans with flexible stretch fabric."
-            ),
-            (
-                "Lightweight Running Sports Shoes",
-                "Footwear",
-                1799.00,
-                18,
-                "Breathable mesh athletic shoes with shock-absorbing EVA sole for daily running."
-            ),
-            (
-                "Casual Canvas Low-Top Sneakers",
-                "Footwear",
-                899.00,
-                22,
-                "Classic street-style vulcanized rubber sole sneakers for everyday comfort."
-            ),
-            (
-                "UV-Protected Polarized Sunglasses",
-                "Accessories",
-                699.00,
-                30,
-                "Unisex polarized sunglasses with anti-glare coating and lightweight alloy frame."
-            ),
-            (
-                "Minimalist Stainless Steel Wristwatch",
-                "Accessories",
-                1499.00,
-                12,
-                "Sleek analog quartz watch with scratch-resistant mineral glass and metal strap."
-            ),
-            (
-                "Water-Resistant Laptop Backpack",
-                "Bags",
-                1199.00,
-                16,
-                "Spacious multi-compartment travel backpack with dedicated 15.6-inch padded laptop sleeve."
-            ),
-            (
-                "Multi-Utility Canvas Duffel Bag",
-                "Bags",
-                999.00,
-                14,
-                "Sturdy weekend travel bag with reinforced handles and detachable shoulder strap."
-            )
-        ]
-
-        for p in sample_products:
+    for p in sample_products:
+        exists = conn.execute("SELECT id FROM products WHERE name = ?;", (p[0],)).fetchone()
+        if not exists:
             cursor.execute("""
             INSERT INTO products (name, category, price, stock, description)
             VALUES (?, ?, ?, ?, ?);
             """, p)
 
-        conn.commit()
+    conn.commit()
 
     # Seed default promo coupons if missing
-    coupon_count = conn.execute("SELECT COUNT(*) AS count FROM coupons;").fetchone()["count"]
-    if coupon_count == 0:
-        sample_coupons = [
-            ("WELCOME10", "percentage", 10.0, 500.0, 100, 0, None, None, 1),
-            ("FLAT100", "fixed", 100.0, 1000.0, 50, 0, None, None, 1),
-            ("FESTIVE20", "percentage", 20.0, 2000.0, 20, 0, None, None, 1),
-        ]
-        for c in sample_coupons:
+    sample_coupons = [
+        ("WELCOME10", "percentage", 10.0, 500.0, 100, 0, None, None, 1),
+        ("FLAT100", "fixed", 100.0, 1000.0, 50, 0, None, None, 1),
+        ("FLAT200", "fixed", 200.0, 1000.0, 50, 0, None, None, 1),
+        ("FESTIVE20", "percentage", 20.0, 2000.0, 20, 0, None, None, 1),
+        ("EXPIRED50", "percentage", 50.0, 0.0, 100, 0, None, "2020-01-01", 1),
+        ("INACTIVE20", "percentage", 20.0, 0.0, 100, 0, None, None, 0),
+        ("FUTURE25", "percentage", 25.0, 0.0, 100, 0, "2099-01-01", None, 1),
+        ("MAXEDOUT", "fixed", 50.0, 0.0, 5, 5, None, None, 1),
+    ]
+    for c in sample_coupons:
+        existing_cpn = conn.execute("SELECT id FROM coupons WHERE code = ?;", (c[0],)).fetchone()
+        if not existing_cpn:
             cursor.execute("""
             INSERT INTO coupons (code, discount_type, discount_value, min_cart_value, usage_limit, used_count, start_date, expiry_date, is_active)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
             """, c)
+    conn.commit()
+
+    # Seed default administrator account if missing
+    admin_row = conn.execute("SELECT id FROM customers WHERE email = 'admin@nexusmart.com';").fetchone()
+    if not admin_row:
+        from werkzeug.security import generate_password_hash
+        admin_pass_hash = generate_password_hash("AdminPass123!")
+        cursor.execute("""
+            INSERT INTO customers (name, email, password_hash, is_admin)
+            VALUES (?, ?, ?, 1);
+        """, ("Nexus Administrator", "admin@nexusmart.com", admin_pass_hash))
         conn.commit()
 
     conn.close()
@@ -291,9 +308,15 @@ def _init_sqlite_schema(cursor):
         email TEXT UNIQUE NOT NULL,
         password_hash TEXT,
         google_id TEXT UNIQUE,
+        is_admin INTEGER NOT NULL DEFAULT 0,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );
     """)
+
+    # Migration: Ensure is_admin column exists
+    existing_cust_cols = [row["name"] for row in cursor.execute("PRAGMA table_info(customers);").fetchall()]
+    if "is_admin" not in existing_cust_cols:
+        cursor.execute("ALTER TABLE customers ADD COLUMN is_admin INTEGER NOT NULL DEFAULT 0;")
 
     # 2. Products Table
     cursor.execute("""
@@ -434,9 +457,13 @@ def _init_postgres_schema(cursor):
         email VARCHAR(255) UNIQUE NOT NULL,
         password_hash VARCHAR(255),
         google_id VARCHAR(255) UNIQUE,
+        is_admin INTEGER NOT NULL DEFAULT 0,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );
     """)
+
+    # Migration: Ensure is_admin column exists if table was pre-existing
+    cursor.execute("ALTER TABLE customers ADD COLUMN IF NOT EXISTS is_admin INTEGER NOT NULL DEFAULT 0;")
 
     # 2. Products Table
     cursor.execute("""

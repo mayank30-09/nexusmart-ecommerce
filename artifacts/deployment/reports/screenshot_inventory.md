@@ -1,8 +1,8 @@
 # NexusMart — Playwright Live Browser Screenshot Inventory
 
-**Execution Time**: 2026-10-27 20:43:23 UTC  
+**Execution Time**: 2026-10-28 00:16:23 UTC  
 **Target URL**: `http://127.0.0.1:5000`  
-**Total Screenshots Captured**: 20  
+**Total Screenshots Captured**: 25  
 
 | # | Screenshot File | User Journey / Scenario | Viewport | Verification Result |
 |---|---|---|---|---|
@@ -22,7 +22,12 @@
 | 14 | [`09-order-confirmation.png`](file:///D:/AI-Workspace/projects/e-commerce-web/artifacts/deployment/screenshots/09-order-confirmation.png ) | Order Confirmation invoice with verified payment status, reference code, and delivery summary | 1440 × 900 (Desktop) | **VERIFIED PASS** |
 | 15 | [`10-order-history.png`](file:///D:/AI-Workspace/projects/e-commerce-web/artifacts/deployment/screenshots/10-order-history.png ) | Customer Order History table with order status Confirmed and payment status Paid | 1440 × 900 (Desktop) | **VERIFIED PASS** |
 | 16 | [`11-order-detail.png`](file:///D:/AI-Workspace/projects/e-commerce-web/artifacts/deployment/screenshots/11-order-detail.png ) | Detailed Order Breakdown with immutable snapshots of items, coupon code, and shipping address | 1440 × 900 (Desktop) | **VERIFIED PASS** |
-| 17 | [`16-mobile-catalog.png`](file:///D:/AI-Workspace/projects/e-commerce-web/artifacts/deployment/screenshots/16-mobile-catalog.png ) | Responsive Mobile Catalog with touch-friendly cards and adaptive grid | 390 × 844 (Mobile) | **VERIFIED PASS** |
-| 18 | [`18-mobile-product-detail.png`](file:///D:/AI-Workspace/projects/e-commerce-web/artifacts/deployment/screenshots/18-mobile-product-detail.png ) | Responsive Mobile Product Details with single-column touch controls | 390 × 844 (Mobile) | **VERIFIED PASS** |
-| 19 | [`15-mobile-homepage.png`](file:///D:/AI-Workspace/projects/e-commerce-web/artifacts/deployment/screenshots/15-mobile-homepage.png ) | Responsive Mobile Article & Policy layout without horizontal overflow | 390 × 844 (Mobile) | **VERIFIED PASS** |
-| 20 | [`17-mobile-checkout.png`](file:///D:/AI-Workspace/projects/e-commerce-web/artifacts/deployment/screenshots/17-mobile-checkout.png ) | Responsive Mobile Checkout review with stacked address and payment cards | 390 × 844 (Mobile) | **VERIFIED PASS** |
+| 17 | [`11b-ai-recommendations.png`](file:///D:/AI-Workspace/projects/e-commerce-web/artifacts/deployment/screenshots/11b-ai-recommendations.png ) | AI-Powered Product Recommendations on Customer Dashboard tailored by browsing & purchase history (FR-16) | 1440 × 900 (Desktop) | **VERIFIED PASS** |
+| 18 | [`19-admin-dashboard.png`](file:///D:/AI-Workspace/projects/e-commerce-web/artifacts/deployment/screenshots/19-admin-dashboard.png ) | NexusMart Operations Admin Dashboard with live metrics, revenue, and inventory alerts (FR-17 to FR-20) | 1440 × 900 (Desktop) | **VERIFIED PASS** |
+| 19 | [`20-admin-products.png`](file:///D:/AI-Workspace/projects/e-commerce-web/artifacts/deployment/screenshots/20-admin-products.png ) | Admin Product Catalog & Direct Stock Adjustment Interface (FR-17, FR-18) | 1440 × 900 (Desktop) | **VERIFIED PASS** |
+| 20 | [`21-admin-orders.png`](file:///D:/AI-Workspace/projects/e-commerce-web/artifacts/deployment/screenshots/21-admin-orders.png ) | Admin Customer Order Management with status transition actions (FR-20) | 1440 × 900 (Desktop) | **VERIFIED PASS** |
+| 21 | [`22-admin-coupons.png`](file:///D:/AI-Workspace/projects/e-commerce-web/artifacts/deployment/screenshots/22-admin-coupons.png ) | Admin Promotional Coupon Management with activation toggle & creation form (FR-19) | 1440 × 900 (Desktop) | **VERIFIED PASS** |
+| 22 | [`16-mobile-catalog.png`](file:///D:/AI-Workspace/projects/e-commerce-web/artifacts/deployment/screenshots/16-mobile-catalog.png ) | Responsive Mobile Catalog with touch-friendly cards and adaptive grid | 390 × 844 (Mobile) | **VERIFIED PASS** |
+| 23 | [`18-mobile-product-detail.png`](file:///D:/AI-Workspace/projects/e-commerce-web/artifacts/deployment/screenshots/18-mobile-product-detail.png ) | Responsive Mobile Product Details with single-column touch controls | 390 × 844 (Mobile) | **VERIFIED PASS** |
+| 24 | [`15-mobile-homepage.png`](file:///D:/AI-Workspace/projects/e-commerce-web/artifacts/deployment/screenshots/15-mobile-homepage.png ) | Responsive Mobile Article & Policy layout without horizontal overflow | 390 × 844 (Mobile) | **VERIFIED PASS** |
+| 25 | [`17-mobile-checkout.png`](file:///D:/AI-Workspace/projects/e-commerce-web/artifacts/deployment/screenshots/17-mobile-checkout.png ) | Responsive Mobile Checkout review with stacked address and payment cards | 390 × 844 (Mobile) | **VERIFIED PASS** |

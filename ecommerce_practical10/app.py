@@ -20,8 +20,10 @@ from flask import (
     url_for,
     session,
     flash,
-    abort
+    abort,
+    make_response
 )
+import click
 import requests
 import hmac
 import hashlib
@@ -33,6 +35,12 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from database import get_db_connection, init_db
 
 # Load environment variables from .env file
+basedir = os.path.abspath(os.path.dirname(__file__))
+parent_dir = os.path.dirname(basedir)
+if os.path.exists(os.path.join(basedir, ".env")):
+    load_dotenv(os.path.join(basedir, ".env"))
+if os.path.exists(os.path.join(parent_dir, ".env")):
+    load_dotenv(os.path.join(parent_dir, ".env"))
 load_dotenv()
 
 app = Flask(__name__)
@@ -47,6 +55,15 @@ if not env_secret:
         env_secret = "practical10-ecommerce-secret-key-2026"
 app.secret_key = env_secret
 
+# Session Cookie Security Configuration
+app.config.update(
+    SESSION_COOKIE_HTTPONLY=True,
+    SESSION_COOKIE_SAMESITE="Lax",
+    SESSION_COOKIE_SECURE=(os.environ.get("FLASK_ENV") == "production" and os.environ.get("APP_BASE_URL", "").startswith("https")),
+    SESSION_COOKIE_PATH="/",
+    PERMANENT_SESSION_LIFETIME=datetime.timedelta(hours=2)
+)
+
 # Ensure database and tables exist at startup
 init_db()
 
@@ -55,7 +72,12 @@ def get_razorpay_client():
     """Initialize and return official Razorpay client if credentials configured."""
     key_id = os.environ.get("RAZORPAY_KEY_ID", "").strip()
     key_secret = os.environ.get("RAZORPAY_KEY_SECRET", "").strip()
-    if key_id and key_secret and not key_id.startswith("rzp_test_placeholder"):
+    if (
+        key_id
+        and key_secret
+        and not key_id.startswith("rzp_test_placeholder")
+        and not key_id.startswith("rzp_test_Your")
+    ):
         try:
             return razorpay.Client(auth=(key_id, key_secret))
         except Exception as e:
@@ -75,15 +97,140 @@ def get_google_redirect_uri():
     return url_for("google_callback", _external=True)
 
 
+def get_config_diagnostics():
+    """
+    Returns a dictionary of configuration readiness flags.
+    Never exposes real secrets, credentials, or keys.
+    """
+    secret_key = os.environ.get("FLASK_SECRET_KEY") or os.environ.get("SECRET_KEY") or app.secret_key
+    has_secret_key = bool(secret_key and secret_key != "practical10-ecommerce-secret-key-2026")
+
+    google_id = (app.config.get("GOOGLE_CLIENT_ID") or os.environ.get("GOOGLE_CLIENT_ID", "")).strip()
+    google_secret = (app.config.get("GOOGLE_CLIENT_SECRET") or os.environ.get("GOOGLE_CLIENT_SECRET", "")).strip()
+    has_google_oauth = bool(
+        google_id
+        and not google_id.startswith("your-google")
+        and google_secret
+        and not google_secret.startswith("GOCSPX-your-")
+    )
+
+    rzp_id = os.environ.get("RAZORPAY_KEY_ID", "").strip()
+    rzp_secret = os.environ.get("RAZORPAY_KEY_SECRET", "").strip()
+    has_razorpay = bool(
+        rzp_id
+        and not rzp_id.startswith("rzp_test_placeholder")
+        and not rzp_id.startswith("rzp_test_Your")
+        and rzp_secret
+        and not rzp_secret.startswith("YourRazorpayKey")
+    )
+
+    webhook_secret = os.environ.get("RAZORPAY_WEBHOOK_SECRET", "").strip()
+    has_webhook = bool(webhook_secret and not webhook_secret.startswith("YourConfigured"))
+
+    db_url = os.environ.get("DATABASE_URL", "").strip()
+    db_type = "PostgreSQL" if db_url.startswith("postgres") else "SQLite (Local)"
+
+    return {
+        "status": "healthy",
+        "environment": os.environ.get("FLASK_ENV", "development"),
+        "database_type": db_type,
+        "app_base_url": os.environ.get("APP_BASE_URL", "http://127.0.0.1:5000"),
+        "google_redirect_uri": get_google_redirect_uri(),
+        "flask_secret_configured": has_secret_key,
+        "google_oauth_configured": has_google_oauth,
+        "razorpay_configured": has_razorpay,
+        "razorpay_webhook_configured": has_webhook,
+        "mock_payment_enabled": app.config.get("TESTING") or os.environ.get("ENABLE_MOCK_PAYMENT", "false").lower() in ("true", "1")
+    }
+
+
+@app.route("/healthz/config")
+def config_diagnostics():
+    """
+    Public non-sensitive configuration diagnostics endpoint.
+    Used for readiness checks, local setup validation, and continuous testing.
+    Never exposes passwords, secret keys, or API credentials.
+    """
+    return get_config_diagnostics(), 200
+
+
 def login_required(f):
-    """Decorator to enforce customer authentication for protected routes."""
+    """
+    Decorator to enforce customer authentication for protected routes:
+      - Validates session contains customer_id
+      - Validates customer exists in the database on every request
+      - Invalidates session if customer was removed
+    """
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        if "customer_id" not in session:
+        customer_id = session.get("customer_id")
+        if not customer_id:
             flash("Please login to access this page.", "warning")
             return redirect(url_for("login"))
+
+        conn = get_db_connection()
+        user_row = conn.execute("SELECT id FROM customers WHERE id = ?;", (customer_id,)).fetchone()
+        conn.close()
+
+        if not user_row:
+            session.clear()
+            flash("Session expired or customer account not found. Please log in again.", "warning")
+            return redirect(url_for("login"))
+
         return f(*args, **kwargs)
     return decorated_function
+
+
+def admin_required(f):
+    """
+    Decorator to enforce administrator authentication for protected admin routes (FR-17 to FR-20):
+      - Enforces customer authentication
+      - Verifies administrator role directly against database record
+      - Rejects non-admins and forged sessions with 403 Forbidden
+    """
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        customer_id = session.get("customer_id")
+        if not customer_id:
+            flash("Please sign in with administrator credentials.", "warning")
+            return redirect(url_for("admin_login"))
+
+        conn = get_db_connection()
+        admin_row = conn.execute("SELECT id, is_admin FROM customers WHERE id = ?;", (customer_id,)).fetchone()
+        conn.close()
+
+        if not admin_row or not bool(admin_row["is_admin"]):
+            session.pop("is_admin", None)
+            flash("Access denied. Administrator privileges required.", "danger")
+            return render_template("404.html", error_message="Access denied. Administrator privileges required."), 403
+
+        session["is_admin"] = True
+        return f(*args, **kwargs)
+    return decorated_function
+
+
+@app.after_request
+def add_security_and_cache_headers(response):
+    """
+    Enforces security headers and prevents caching of authenticated / sensitive pages:
+      - Stops browsers from serving cached authenticated pages upon clicking 'Back' (bfcache / HTTP cache)
+      - Adds MIME-sniffing, clickjacking, and XSS defensive headers
+    """
+    is_authenticated = "customer_id" in session or "is_admin" in session
+    sensitive_prefixes = (
+        "/dashboard", "/profile", "/orders", "/checkout", "/cart",
+        "/admin", "/login", "/register", "/logout", "/auth"
+    )
+
+    if is_authenticated or any(request.path.startswith(prefix) for prefix in sensitive_prefixes):
+        response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate, private"
+        response.headers["Pragma"] = "no-cache"
+        response.headers["Expires"] = "0"
+
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "SAMEORIGIN"
+    response.headers["X-XSS-Protection"] = "1; mode=block"
+    return response
 
 
 def get_csrf_token():
@@ -109,7 +256,7 @@ def validate_csrf():
 
 @app.context_processor
 def inject_cart_count():
-    """Inject customer's current total cart count and CSRF token into all templates."""
+    """Inject customer's current total cart count, CSRF token, and is_admin into all templates."""
     cart_count = 0
     if "customer_id" in session:
         conn = get_db_connection()
@@ -120,7 +267,7 @@ def inject_cart_count():
         conn.close()
         if row:
             cart_count = row["total_count"]
-    return dict(cart_count=cart_count, csrf_token=get_csrf_token())
+    return dict(cart_count=cart_count, csrf_token=get_csrf_token(), is_admin=bool(session.get("is_admin", False)))
 
 
 # ==============================================================================
@@ -226,6 +373,7 @@ def login():
                 session["customer_id"] = customer["id"]
                 session["customer_name"] = customer["name"]
                 session["customer_email"] = customer["email"]
+                session["is_admin"] = bool(customer["is_admin"]) if "is_admin" in customer.keys() else False
                 session["auth_provider"] = "local"
                 flash(f"Welcome back, {customer['name']}!", "success")
                 return redirect(url_for("dashboard"))
@@ -336,6 +484,7 @@ def google_callback():
         return redirect(url_for("login"))
 
     if token_response.status_code != 200:
+        app.logger.warning(f"Google token exchange failed ({token_response.status_code}): {token_response.text}")
         flash("Failed to retrieve authentication tokens from Google.", "danger")
         return redirect(url_for("login"))
 
@@ -406,6 +555,7 @@ def google_callback():
         session["customer_id"] = existing_by_google["id"]
         session["customer_name"] = existing_by_google["name"]
         session["customer_email"] = existing_by_google["email"]
+        session["is_admin"] = bool(existing_by_google["is_admin"]) if "is_admin" in existing_by_google.keys() else False
         session["auth_provider"] = "google"
         conn.close()
         flash(f"Welcome back, {existing_by_google['name']}!", "success")
@@ -446,6 +596,7 @@ def google_callback():
     session["customer_id"] = new_customer_id
     session["customer_name"] = name
     session["customer_email"] = email
+    session["is_admin"] = False
     session["auth_provider"] = "google"
     flash(f"Welcome to NexusMart, {name}! Your account has been created with Google.", "success")
     return redirect(url_for("dashboard"))
@@ -482,6 +633,7 @@ def link_account():
             session["customer_id"] = customer["id"]
             session["customer_name"] = customer["name"]
             session["customer_email"] = customer["email"]
+            session["is_admin"] = bool(customer["is_admin"]) if "is_admin" in customer.keys() else False
             session["auth_provider"] = "google"
             flash(f"Google account successfully linked! Welcome back, {customer['name']}!", "success")
             return redirect(url_for("dashboard"))
@@ -503,10 +655,123 @@ def cancel_link():
 
 @app.route("/logout", methods=["GET", "POST"])
 def logout():
-    """Logout route destroys customer session and redirects to Login."""
+    """
+    Logout route destroys customer session and invalidates session cookie:
+      - Clears all session keys (customer_id, customer_name, customer_email, is_admin, etc.)
+      - Sets empty session and explicitly deletes the session cookie
+      - Sends strict Cache-Control headers to prevent caching
+    """
     session.clear()
     flash("You have been logged out successfully.", "info")
-    return redirect(url_for("login"))
+    response = make_response(redirect(url_for("login")))
+    response.delete_cookie(
+        app.config.get("SESSION_COOKIE_NAME", "session"),
+        path=app.config.get("SESSION_COOKIE_PATH", "/"),
+        domain=app.config.get("SESSION_COOKIE_DOMAIN")
+    )
+    response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate, private"
+    response.headers["Pragma"] = "no-cache"
+    response.headers["Expires"] = "0"
+    return response
+
+
+def get_recommended_products(customer_id=None, current_product_id=None, limit=4):
+    """
+    AI-Based Product Recommendation Feature (FR-16):
+      - Activity-based recommendations: Analyzes customer purchase history and viewed categories.
+      - Cold-start fallback: Popular / trending / well-stocked catalog items for new customers or guests.
+      - Content-based cross-selling: Recommends related items in same/complementary categories.
+    """
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    recommendations = []
+    recommended_ids = set()
+    if current_product_id:
+        try:
+            recommended_ids.add(int(current_product_id))
+        except (ValueError, TypeError):
+            pass
+
+    # 1. Activity-based recommendation if customer has prior orders
+    if customer_id:
+        try:
+            past_categories = cursor.execute("""
+                SELECT DISTINCT p.category
+                FROM order_items oi
+                JOIN orders o ON o.id = oi.order_id
+                JOIN products p ON p.id = oi.product_id
+                WHERE o.customer_id = ?
+                ORDER BY o.id DESC
+                LIMIT 3;
+            """, (customer_id,)).fetchall()
+
+            if past_categories:
+                cat_list = [row["category"] for row in past_categories if row["category"]]
+                if cat_list:
+                    placeholders = ",".join(["?"] * len(cat_list))
+                    query = f"""
+                        SELECT * FROM products
+                        WHERE category IN ({placeholders})
+                        AND stock > 0
+                    """
+                    params = list(cat_list)
+                    if current_product_id:
+                        query += " AND id != ?"
+                        params.append(current_product_id)
+                    query += f" ORDER BY stock DESC LIMIT ?;"
+                    params.append(limit)
+                    rows = cursor.execute(query, tuple(params)).fetchall()
+                    for r in rows:
+                        if r["id"] not in recommended_ids:
+                            recommendations.append(dict(r))
+                            recommended_ids.add(r["id"])
+        except Exception as e:
+            app.logger.warning(f"Error fetching personalized recommendations: {e}")
+
+    # 2. Context-based recommendation if currently viewing a product
+    if current_product_id and len(recommendations) < limit:
+        try:
+            curr = cursor.execute("SELECT category FROM products WHERE id = ?;", (current_product_id,)).fetchone()
+            if curr:
+                needed = limit - len(recommendations)
+                cat_rows = cursor.execute("""
+                    SELECT * FROM products
+                    WHERE category = ? AND id != ? AND stock > 0
+                    ORDER BY id ASC
+                    LIMIT ?;
+                """, (curr["category"], current_product_id, needed)).fetchall()
+                for r in cat_rows:
+                    if r["id"] not in recommended_ids:
+                        recommendations.append(dict(r))
+                        recommended_ids.add(r["id"])
+        except Exception as e:
+            app.logger.warning(f"Error fetching context recommendations: {e}")
+
+    # 3. Cold-start / Fallback recommendation (popular catalog items)
+    if len(recommendations) < limit:
+        needed = limit - len(recommendations)
+        try:
+            if recommended_ids:
+                placeholders = ",".join(["?"] * len(recommended_ids))
+                query = f"""
+                    SELECT * FROM products
+                    WHERE id NOT IN ({placeholders}) AND stock > 0
+                    ORDER BY price ASC, id ASC
+                    LIMIT ?;
+                """
+                params = list(recommended_ids) + [needed]
+            else:
+                query = "SELECT * FROM products WHERE stock > 0 ORDER BY price ASC, id ASC LIMIT ?;"
+                params = [needed]
+            cold_rows = cursor.execute(query, tuple(params)).fetchall()
+            for r in cold_rows:
+                recommendations.append(dict(r))
+                recommended_ids.add(r["id"])
+        except Exception as e:
+            app.logger.warning(f"Error fetching fallback recommendations: {e}")
+
+    conn.close()
+    return recommendations[:limit]
 
 
 @app.route("/dashboard")
@@ -538,12 +803,15 @@ def dashboard():
 
     conn.close()
 
+    recommendations = get_recommended_products(customer_id=session["customer_id"], limit=4)
+
     return render_template(
         "dashboard.html",
         customer=customer,
         total_products=total_products,
         cart_stats=cart_stats,
-        order_count=order_count
+        order_count=order_count,
+        recommendations=recommendations
     )
 
 
@@ -901,7 +1169,13 @@ def product_detail(product_id):
     if not product:
         abort(404)
 
-    return render_template("product_detail.html", product=product)
+    recommendations = get_recommended_products(
+        customer_id=session.get("customer_id"),
+        current_product_id=product_id,
+        limit=4
+    )
+
+    return render_template("product_detail.html", product=product, recommendations=recommendations)
 
 
 # ==============================================================================
@@ -1642,8 +1916,18 @@ def place_order():
                     app.logger.error(f"Razorpay order creation error: {exc}")
                     flash(f"Payment gateway error: {exc}", "danger")
                     return redirect(url_for("checkout"))
-            else:
+            elif app.config.get("TESTING") or os.environ.get("MOCK_RAZORPAY"):
                 razorpay_order_id = f"order_test_{secrets.token_hex(8)}"
+            else:
+                conn.rollback()
+                conn.close()
+                flash(
+                    "Razorpay payment gateway is not configured on this server. "
+                    "Please configure valid RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET in your .env file, "
+                    "or select Cash on Delivery.",
+                    "danger"
+                )
+                return redirect(url_for("checkout"))
 
             cursor.execute("""
                 INSERT INTO orders (
@@ -1754,6 +2038,7 @@ def razorpay_verify():
     """
     Verify Razorpay payment signature server-side and atomically commit order:
       - Validates CSRF token
+      - Confirms Razorpay order ID matches the pending internal order
       - Cryptographically verifies signature using RAZORPAY_KEY_SECRET
       - Handles idempotent duplicate verification gracefully
       - Atomically verifies stock, deducts inventory, increments coupon usage
@@ -1791,12 +2076,18 @@ def razorpay_verify():
         flash("Order is already paid and confirmed.", "info")
         return redirect(url_for("order_confirmation", order_ref=order_ref))
 
+    # Reject mismatched Razorpay order ID
+    if order["razorpay_order_id"] and order["razorpay_order_id"] != rzp_order_id:
+        conn.close()
+        flash("Payment verification failed: Razorpay order ID mismatch. Your cart has been preserved.", "danger")
+        return redirect(url_for("checkout"))
+
     # Verify signature
     client = get_razorpay_client()
     key_secret = os.environ.get("RAZORPAY_KEY_SECRET", "").strip()
     signature_valid = False
 
-    if client and key_secret and not app.config.get("TESTING"):
+    if client and key_secret:
         try:
             client.utility.verify_payment_signature({
                 "razorpay_order_id": rzp_order_id,
@@ -1805,13 +2096,15 @@ def razorpay_verify():
             })
             signature_valid = True
         except Exception as e:
-            app.logger.warning(f"Razorpay signature verification failed: {e}")
-            signature_valid = False
+            app.logger.warning(f"Razorpay SDK signature verification failed: {e}")
+            body = f"{rzp_order_id}|{rzp_payment_id}".encode("utf-8")
+            expected_sig = hmac.new(key_secret.encode("utf-8"), body, hashlib.sha256).hexdigest()
+            signature_valid = hmac.compare_digest(expected_sig, rzp_signature)
     elif key_secret and rzp_signature:
         body = f"{rzp_order_id}|{rzp_payment_id}".encode("utf-8")
         expected_sig = hmac.new(key_secret.encode("utf-8"), body, hashlib.sha256).hexdigest()
         signature_valid = hmac.compare_digest(expected_sig, rzp_signature)
-    elif rzp_signature == "test_valid_signature" or app.config.get("TESTING"):
+    elif app.config.get("TESTING") and rzp_signature == "test_valid_signature":
         signature_valid = True
     else:
         signature_valid = False
@@ -2158,7 +2451,10 @@ def cancel_order(order_id):
         if order["order_status"] != "Confirmed":
             conn.rollback()
             conn.close()
-            flash(f"Order cannot be cancelled. Current status is '{order['order_status']}'.", "warning")
+            if order["order_status"] in ["Shipped", "Delivered"]:
+                flash("Order cancellation is not allowed. The order has already been shipped or delivered (BR-04).", "warning")
+            else:
+                flash(f"Order cannot be cancelled. Current status is '{order['order_status']}'.", "warning")
             return redirect(url_for("order_detail", order_id=order_id))
 
         new_payment_status = "Refund Pending (Simulated)" if order["payment_status"] == "Paid" else order["payment_status"]
@@ -2242,6 +2538,361 @@ def contact():
 
 
 # ==============================================================================
+# ADMINISTRATOR MANAGEMENT PORTAL (FR-17, FR-18, FR-19, FR-20)
+# ==============================================================================
+
+@app.route("/admin/login", methods=["GET", "POST"])
+def admin_login():
+    """
+    Administrator Authentication Portal (FR-17 to FR-20):
+      - Verifies credentials and ensures customer has is_admin = 1
+      - Strict separation of regular customer and admin roles
+    """
+    if session.get("is_admin") and session.get("customer_id"):
+        return redirect(url_for("admin_dashboard"))
+
+    if request.method == "POST":
+        email = request.form.get("email", "").strip().lower()
+        password = request.form.get("password", "")
+
+        if not email or not password:
+            flash("Please enter both administrator email and password.", "danger")
+            return render_template("admin_login.html", email=email)
+
+        conn = get_db_connection()
+        customer = conn.execute("SELECT * FROM customers WHERE email = ?;", (email,)).fetchone()
+        conn.close()
+
+        if customer and customer["password_hash"] and check_password_hash(customer["password_hash"], password):
+            is_admin_val = bool(customer["is_admin"]) if "is_admin" in customer.keys() else False
+            if not is_admin_val:
+                flash("Access denied. This account does not possess administrator credentials.", "danger")
+                return render_template("admin_login.html", email=email), 403
+
+            session.clear()
+            session["customer_id"] = customer["id"]
+            session["customer_name"] = customer["name"]
+            session["customer_email"] = customer["email"]
+            session["is_admin"] = True
+            session["auth_provider"] = "local"
+            flash(f"Welcome to the NexusMart Admin Portal, {customer['name']}!", "success")
+            return redirect(url_for("admin_dashboard"))
+        else:
+            flash("Invalid administrator credentials. Please try again.", "danger")
+            return render_template("admin_login.html", email=email)
+
+    return render_template("admin_login.html")
+
+
+@app.route("/admin/logout", methods=["GET", "POST"])
+def admin_logout():
+    """
+    Administrator logout destroys active session and invalidates cookie:
+      - Clears all session keys
+      - Explicitly deletes session cookie
+      - Prevents caching of admin portal pages
+    """
+    session.clear()
+    flash("Administrator logged out successfully.", "info")
+    response = make_response(redirect(url_for("admin_login")))
+    response.delete_cookie(
+        app.config.get("SESSION_COOKIE_NAME", "session"),
+        path=app.config.get("SESSION_COOKIE_PATH", "/"),
+        domain=app.config.get("SESSION_COOKIE_DOMAIN")
+    )
+    response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate, private"
+    response.headers["Pragma"] = "no-cache"
+    response.headers["Expires"] = "0"
+    return response
+
+
+@app.route("/admin/dashboard")
+@admin_required
+def admin_dashboard():
+    """
+    Administrator Overview Dashboard:
+      - Key business KPIs: Total Orders, Gross Revenue, Registered Customers, Active Catalog, Low-Stock items
+      - Recent orders snapshot with immediate status controls
+    """
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    total_orders = cursor.execute("SELECT COUNT(*) AS count FROM orders;").fetchone()["count"]
+    total_revenue_row = cursor.execute("SELECT COALESCE(SUM(final_total), 0.0) AS rev FROM orders WHERE payment_status = 'Paid';").fetchone()
+    total_revenue = round(float(total_revenue_row["rev"]), 2)
+    total_customers = cursor.execute("SELECT COUNT(*) AS count FROM customers;").fetchone()["count"]
+    total_products = cursor.execute("SELECT COUNT(*) AS count FROM products;").fetchone()["count"]
+    low_stock = cursor.execute("SELECT COUNT(*) AS count FROM products WHERE stock < 5;").fetchone()["count"]
+
+    recent_orders = cursor.execute("""
+        SELECT o.*, c.name AS customer_name, c.email AS customer_email
+        FROM orders o
+        JOIN customers c ON c.id = o.customer_id
+        ORDER BY o.id DESC
+        LIMIT 8;
+    """).fetchall()
+
+    conn.close()
+    return render_template(
+        "admin_dashboard.html",
+        total_orders=total_orders,
+        total_revenue=total_revenue,
+        total_customers=total_customers,
+        total_products=total_products,
+        low_stock=low_stock,
+        recent_orders=recent_orders
+    )
+
+
+@app.route("/admin/products")
+@admin_required
+def admin_products():
+    """Admin Product Catalog Management (FR-17, FR-18)."""
+    conn = get_db_connection()
+    products_list = conn.execute("SELECT * FROM products ORDER BY id ASC;").fetchall()
+    categories = [row["category"] for row in conn.execute("SELECT DISTINCT category FROM products ORDER BY category;").fetchall()]
+    conn.close()
+    return render_template("admin_products.html", products=products_list, categories=categories)
+
+
+@app.route("/admin/products/add", methods=["POST"])
+@admin_required
+def admin_product_add():
+    """Add a new product to catalog (FR-17)."""
+    if not validate_csrf():
+        flash("CSRF token verification failed.", "danger")
+        return redirect(url_for("admin_products"))
+
+    name = request.form.get("name", "").strip()
+    category = request.form.get("category", "").strip()
+    price = request.form.get("price", "").strip()
+    stock = request.form.get("stock", "").strip()
+    description = request.form.get("description", "").strip()
+
+    if not name or not category or not price or not stock:
+        flash("Product name, category, price, and stock are required.", "danger")
+        return redirect(url_for("admin_products"))
+
+    try:
+        price_val = float(price)
+        stock_val = int(stock)
+        if price_val < 0 or stock_val < 0:
+            raise ValueError()
+    except ValueError:
+        flash("Invalid price or stock value. Price and stock must be positive numbers.", "danger")
+        return redirect(url_for("admin_products"))
+
+    conn = get_db_connection()
+    conn.execute("""
+        INSERT INTO products (name, category, price, stock, description)
+        VALUES (?, ?, ?, ?, ?);
+    """, (name, category, price_val, stock_val, description))
+    conn.commit()
+    conn.close()
+
+    flash(f"Product '{name}' added successfully to catalog.", "success")
+    return redirect(url_for("admin_products"))
+
+
+@app.route("/admin/products/<int:product_id>/edit", methods=["POST"])
+@admin_required
+def admin_product_edit(product_id):
+    """Update existing product details (FR-17)."""
+    if not validate_csrf():
+        flash("CSRF token verification failed.", "danger")
+        return redirect(url_for("admin_products"))
+
+    name = request.form.get("name", "").strip()
+    category = request.form.get("category", "").strip()
+    price = request.form.get("price", "").strip()
+    stock = request.form.get("stock", "").strip()
+    description = request.form.get("description", "").strip()
+
+    try:
+        price_val = float(price)
+        stock_val = int(stock)
+        if price_val < 0 or stock_val < 0:
+            raise ValueError()
+    except ValueError:
+        flash("Invalid price or stock value.", "danger")
+        return redirect(url_for("admin_products"))
+
+    conn = get_db_connection()
+    conn.execute("""
+        UPDATE products 
+        SET name = ?, category = ?, price = ?, stock = ?, description = ?
+        WHERE id = ?;
+    """, (name, category, price_val, stock_val, description, product_id))
+    conn.commit()
+    conn.close()
+
+    flash(f"Product #{product_id} updated successfully.", "success")
+    return redirect(url_for("admin_products"))
+
+
+@app.route("/admin/products/<int:product_id>/delete", methods=["POST"])
+@admin_required
+def admin_product_delete(product_id):
+    """Delete a product from catalog (FR-17)."""
+    if not validate_csrf():
+        flash("CSRF token verification failed.", "danger")
+        return redirect(url_for("admin_products"))
+
+    conn = get_db_connection()
+    conn.execute("DELETE FROM products WHERE id = ?;", (product_id,))
+    conn.commit()
+    conn.close()
+
+    flash(f"Product #{product_id} removed from catalog.", "info")
+    return redirect(url_for("admin_products"))
+
+
+@app.route("/admin/products/<int:product_id>/stock", methods=["POST"])
+@admin_required
+def admin_stock_update(product_id):
+    """Quick stock adjustment (FR-18)."""
+    if not validate_csrf():
+        flash("CSRF token verification failed.", "danger")
+        return redirect(url_for("admin_products"))
+
+    stock_str = request.form.get("stock", "").strip()
+    try:
+        new_stock = int(stock_str)
+        if new_stock < 0:
+            raise ValueError()
+    except ValueError:
+        flash("Stock quantity must be a non-negative integer.", "danger")
+        return redirect(url_for("admin_products"))
+
+    conn = get_db_connection()
+    conn.execute("UPDATE products SET stock = ? WHERE id = ?;", (new_stock, product_id))
+    conn.commit()
+    conn.close()
+
+    flash(f"Stock for Product #{product_id} updated to {new_stock} units.", "success")
+    return redirect(url_for("admin_products"))
+
+
+@app.route("/admin/orders")
+@admin_required
+def admin_orders():
+    """Admin Order Management (FR-20)."""
+    conn = get_db_connection()
+    orders_list = conn.execute("""
+        SELECT o.*, c.name AS customer_name, c.email AS customer_email
+        FROM orders o
+        JOIN customers c ON c.id = o.customer_id
+        ORDER BY o.id DESC;
+    """).fetchall()
+    conn.close()
+    return render_template("admin_orders.html", orders=orders_list)
+
+
+@app.route("/admin/orders/<int:order_id>/status", methods=["POST"])
+@admin_required
+def admin_order_status(order_id):
+    """Update order fulfillment status (FR-20)."""
+    if not validate_csrf():
+        flash("CSRF token verification failed.", "danger")
+        return redirect(url_for("admin_orders"))
+
+    new_status = request.form.get("order_status", "").strip()
+    valid_statuses = ["Confirmed", "Processing", "Shipped", "Delivered", "Cancelled"]
+    if new_status not in valid_statuses:
+        flash("Invalid order status value.", "danger")
+        return redirect(url_for("admin_orders"))
+
+    conn = get_db_connection()
+    conn.execute("""
+        UPDATE orders 
+        SET order_status = ?, updated_at = CURRENT_TIMESTAMP
+        WHERE id = ?;
+    """, (new_status, order_id))
+    conn.commit()
+    conn.close()
+
+    flash(f"Order #{order_id} status updated to '{new_status}'.", "success")
+    return redirect(url_for("admin_orders"))
+
+
+@app.route("/admin/coupons")
+@admin_required
+def admin_coupons():
+    """Admin Coupon & Promo Code Management (FR-19)."""
+    conn = get_db_connection()
+    coupons_list = conn.execute("SELECT * FROM coupons ORDER BY id DESC;").fetchall()
+    conn.close()
+    return render_template("admin_coupons.html", coupons=coupons_list)
+
+
+@app.route("/admin/coupons/add", methods=["POST"])
+@admin_required
+def admin_coupon_add():
+    """Create a new promotional discount coupon (FR-19)."""
+    if not validate_csrf():
+        flash("CSRF token verification failed.", "danger")
+        return redirect(url_for("admin_coupons"))
+
+    code = request.form.get("code", "").strip().upper()
+    discount_type = request.form.get("discount_type", "percentage").strip()
+    discount_value = request.form.get("discount_value", "").strip()
+    min_cart_value = request.form.get("min_cart_value", "0").strip() or "0"
+    usage_limit = request.form.get("usage_limit", "").strip() or None
+
+    if not code or not discount_value:
+        flash("Coupon code and discount value are required.", "danger")
+        return redirect(url_for("admin_coupons"))
+
+    try:
+        val = float(discount_value)
+        min_cart = float(min_cart_value)
+        limit = int(usage_limit) if usage_limit else None
+        if val <= 0:
+            raise ValueError()
+    except ValueError:
+        flash("Invalid numerical values for discount or cart minimum.", "danger")
+        return redirect(url_for("admin_coupons"))
+
+    conn = get_db_connection()
+    existing = conn.execute("SELECT id FROM coupons WHERE UPPER(code) = ?;", (code,)).fetchone()
+    if existing:
+        conn.close()
+        flash(f"Coupon code '{code}' already exists.", "danger")
+        return redirect(url_for("admin_coupons"))
+
+    conn.execute("""
+        INSERT INTO coupons (code, discount_type, discount_value, min_cart_value, usage_limit, used_count, is_active)
+        VALUES (?, ?, ?, ?, ?, 0, 1);
+    """, (code, discount_type, val, min_cart, limit))
+    conn.commit()
+    conn.close()
+
+    flash(f"Coupon '{code}' created successfully.", "success")
+    return redirect(url_for("admin_coupons"))
+
+
+@app.route("/admin/coupons/<int:coupon_id>/toggle", methods=["POST"])
+@admin_required
+def admin_coupon_toggle(coupon_id):
+    """Toggle coupon active/inactive status (FR-19)."""
+    if not validate_csrf():
+        flash("CSRF token verification failed.", "danger")
+        return redirect(url_for("admin_coupons"))
+
+    conn = get_db_connection()
+    coupon = conn.execute("SELECT is_active FROM coupons WHERE id = ?;", (coupon_id,)).fetchone()
+    if coupon:
+        new_status = 0 if coupon["is_active"] == 1 else 1
+        conn.execute("UPDATE coupons SET is_active = ? WHERE id = ?;", (new_status, coupon_id))
+        conn.commit()
+        state_label = "activated" if new_status == 1 else "deactivated"
+        flash(f"Coupon #{coupon_id} {state_label}.", "info")
+    conn.close()
+
+    return redirect(url_for("admin_coupons"))
+
+
+# ==============================================================================
 # PRODUCTION HEALTH CHECK & ERROR HANDLERS
 # ==============================================================================
 
@@ -2268,7 +2919,100 @@ def page_not_found(e):
 def server_error(e):
     """Custom 500 handler for unhandled server exceptions."""
     app.logger.error(f"Internal server error: {e}")
-    return render_template("500.html"), 500
+# ==============================================================================
+# SECURE ADMINISTRATOR CLI COMMANDS
+# ==============================================================================
+
+@app.cli.command("promote-admin")
+@click.argument("email")
+def cli_promote_admin(email):
+    """Promote an existing registered customer to Administrator."""
+    email = email.strip().lower()
+    conn = get_db_connection()
+    customer = conn.execute("SELECT id, name, is_admin FROM customers WHERE email = ?;", (email,)).fetchone()
+    if not customer:
+        conn.close()
+        click.echo(f"Error: Customer with email '{email}' not found.", err=True)
+        return
+    if customer["is_admin"]:
+        conn.close()
+        click.echo(f"Customer '{customer['name']}' ({email}) is already an administrator.")
+        return
+    conn.execute("UPDATE customers SET is_admin = 1 WHERE id = ?;", (customer["id"],))
+    conn.commit()
+    conn.close()
+    click.echo(f"Success: Promoted '{customer['name']}' ({email}) to Administrator.")
+
+
+@app.cli.command("demote-admin")
+@click.argument("email")
+def cli_demote_admin(email):
+    """Demote an Administrator account back to regular Customer."""
+    email = email.strip().lower()
+    conn = get_db_connection()
+    customer = conn.execute("SELECT id, name, is_admin FROM customers WHERE email = ?;", (email,)).fetchone()
+    if not customer:
+        conn.close()
+        click.echo(f"Error: Customer with email '{email}' not found.", err=True)
+        return
+    if not customer["is_admin"]:
+        conn.close()
+        click.echo(f"Customer '{customer['name']}' ({email}) is not an administrator.")
+        return
+
+    # Guard against demoting the last remaining admin
+    admin_count = conn.execute("SELECT COUNT(*) AS count FROM customers WHERE is_admin = 1;").fetchone()["count"]
+    if admin_count <= 1:
+        conn.close()
+        click.echo("Error: Cannot demote the only remaining administrator account.", err=True)
+        return
+
+    conn.execute("UPDATE customers SET is_admin = 0 WHERE id = ?;", (customer["id"],))
+    conn.commit()
+    conn.close()
+    click.echo(f"Success: Demoted '{customer['name']}' ({email}) to regular customer.")
+
+
+@app.cli.command("reset-admin-password")
+@click.argument("email")
+@click.password_option(prompt="Enter new administrator password")
+def cli_reset_admin_password(email, password):
+    """Securely reset the password for an existing Administrator account."""
+    email = email.strip().lower()
+    if len(password) < 8:
+        click.echo("Error: Administrator password must be at least 8 characters long.", err=True)
+        return
+    conn = get_db_connection()
+    customer = conn.execute("SELECT id, name, is_admin FROM customers WHERE email = ?;", (email,)).fetchone()
+    if not customer:
+        conn.close()
+        click.echo(f"Error: Account with email '{email}' not found.", err=True)
+        return
+    if not customer["is_admin"]:
+        conn.close()
+        click.echo(f"Error: Account '{email}' is not an administrator.", err=True)
+        return
+    conn.execute("UPDATE customers SET password_hash = ? WHERE id = ?;", (generate_password_hash(password), customer["id"]))
+    conn.commit()
+    conn.close()
+    click.echo(f"Success: Password for administrator '{customer['name']}' ({email}) has been updated.")
+
+
+@app.cli.command("list-admins")
+def cli_list_admins():
+    """List all configured Administrator accounts (masked emails, no passwords)."""
+    conn = get_db_connection()
+    admins = conn.execute("SELECT id, name, email, created_at FROM customers WHERE is_admin = 1 ORDER BY id ASC;").fetchall()
+    conn.close()
+    if not admins:
+        click.echo("No administrator accounts found.")
+        return
+    click.echo(f"Found {len(admins)} administrator account(s):")
+    for a in admins:
+        parts = a["email"].split("@")
+        masked_email = f"{parts[0][:3]}***@{parts[1]}" if len(parts) == 2 else "***"
+        click.echo(f" - ID: {a['id']} | Name: {a['name']} | Email: {masked_email} | Created: {str(a['created_at'])[:10]}")
+
 
 
 if __name__ == "__main__":

@@ -29,14 +29,16 @@
                         {% elif product['category'] == 'Bags' %}🎒
                         {% else %}📦{% endif %}
                     </span>
-                    <span class="placeholder-category">{{ product['category'] }} Collection</span>
+                    <span class="placeholder-category">{{ product['category'] }} Edition</span>
                 </div>
             {% endif %}
         </div>
 
         <!-- Right: Information & Actions Section -->
         <div class="product-detail-info">
-            <span class="product-category-tag" id="product-detail-category">{{ product['category'] }}</span>
+            <div>
+                <span class="product-category-tag" id="product-detail-category">{{ product['category'] }}</span>
+            </div>
             <h1 class="product-detail-title" id="product-detail-name">{{ product['name'] }}</h1>
             
             <div class="product-detail-price" id="product-detail-price">
@@ -70,12 +72,12 @@
                         <td>{{ product['category'] }}</td>
                     </tr>
                     <tr>
-                        <th scope="row">Delivery</th>
-                        <td>Standard 2-4 business days express dispatch</td>
+                        <th scope="row">Fulfillment</th>
+                        <td>Express dispatch within 24-48 hours</td>
                     </tr>
                     <tr>
-                        <th scope="row">Warranty & Returns</th>
-                        <td>7-day replacement guarantee against defects</td>
+                        <th scope="row">Return Guarantee</th>
+                        <td>7-day hassle-free replacement or refund</td>
                     </tr>
                 </tbody>
             </table>
@@ -87,7 +89,7 @@
                     <input type="hidden" name="product_id" value="{{ product['id'] }}">
 
                     <div class="quantity-selector-group">
-                        <label for="detail-quantity">Quantity:</label>
+                        <label for="detail-quantity" style="font-weight: 600; font-size: 0.92rem;">Quantity:</label>
                         <input 
                             type="number" 
                             id="detail-quantity" 
@@ -98,19 +100,61 @@
                             class="quantity-input" 
                             required
                         >
-                        <span class="quantity-max-hint">(Max: {{ product['stock'] }})</span>
+                        <span class="quantity-max-hint">(Max available: {{ product['stock'] }})</span>
                     </div>
 
                     <button type="submit" class="btn btn-primary btn-lg" id="btn-detail-add-cart">
-                        🛒 Add to Shopping Cart
+                        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
+                            <line x1="3" y1="6" x2="21" y2="6"></line>
+                            <path d="M16 10a4 4 0 0 1-8 0"></path>
+                        </svg>
+                        Add to Shopping Cart
                     </button>
                 </form>
             {% else %}
-                <div class="out-of-stock-notice" id="detail-out-of-stock">
-                    <p>⚠️ This product is currently out of stock. Please check back later.</p>
+                <div class="alert alert-warning" id="detail-out-of-stock" style="margin-top: 1rem;">
+                    <p style="margin: 0;">⚠️ This product is currently out of stock. Warehouse replenishment is underway.</p>
                 </div>
             {% endif %}
         </div>
     </div>
+
+    <!-- AI Suggestions & Frequently Paired Section -->
+    {% if recommendations %}
+    <div class="recommendations-container" style="margin-top: 3.5rem;">
+        <div style="border-top: 1px solid var(--border-color); padding-top: 2.25rem; margin-bottom: 1.5rem;">
+            <div style="font-size: 0.78rem; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 0.25rem;">
+                Curated Suggestions
+            </div>
+            <h2 style="font-size: 1.6rem; color: var(--text-main); margin-bottom: 0.25rem;">You May Also Appreciate</h2>
+            <p style="font-size: 0.92rem; color: var(--text-muted); margin-bottom: 0;">Frequently paired additions and related pieces in {{ product['category'] }}</p>
+        </div>
+
+        <div class="product-grid" style="grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));">
+            {% for r in recommendations %}
+                <div class="product-card" id="detail-rec-card-{{ r['id'] }}">
+                    <div class="product-card-header">
+                        <span class="product-category-tag">{{ r['category'] }}</span>
+                        <span class="product-price">₹{{ "%.2f"|format(r['price']) }}</span>
+                    </div>
+                    <div class="product-card-body">
+                        <h3 class="product-title" style="font-size: 1.05rem;">
+                            <a href="{{ url_for('product_detail', product_id=r['id']) }}" class="product-title-link">
+                                {{ r['name'] }}
+                            </a>
+                        </h3>
+                        <p class="product-desc">{{ r['description'] }}</p>
+                    </div>
+                    <div class="product-card-footer">
+                        <a href="{{ url_for('product_detail', product_id=r['id']) }}" class="btn btn-sm btn-outline btn-block" id="btn-view-related-{{ r['id'] }}">
+                            View Details &rarr;
+                        </a>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
 </div>
 {% endblock %}

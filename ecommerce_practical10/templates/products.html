@@ -1,19 +1,34 @@
 {% extends "base.html" %}
 
-{% block title %}Explore Catalog - NexusMart{% endblock %}
+{% block title %}Curated Collection - NexusMart{% endblock %}
 
 {% block content %}
 <div class="products-container">
-    <div style="margin-bottom: 1.25rem;">
-        <h1>Product Catalog</h1>
-        <p>Explore curated products across tech, fashion, footwear, and accessories with instant search and filtering.</p>
+    <!-- Editorial Page Header -->
+    <div style="margin-bottom: 2rem; border-bottom: 1px solid var(--border-color); padding-bottom: 1.5rem;">
+        <div style="font-size: 0.8rem; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 0.35rem;">
+            The NexusMart Catalog
+        </div>
+        <div style="display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 1rem;">
+            <div>
+                <h1>Product Catalog</h1>
+                <p style="max-width: 650px;">Handpicked tech hardware, modern apparel, footwear, and daily essentials designed with precision and intention.</p>
+            </div>
+            <!-- Quick Category Pill Filter -->
+            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                <a href="{{ url_for('products') }}" class="brand-badge" style="{% if not selected_category %}background: var(--accent); color: #fff;{% endif %} text-decoration: none;">All</a>
+                {% for cat in categories %}
+                    <a href="{{ url_for('products', category=cat) }}" class="brand-badge" style="{% if selected_category == cat %}background: var(--accent); color: #fff;{% endif %} text-decoration: none;">{{ cat }}</a>
+                {% endfor %}
+            </div>
+        </div>
     </div>
 
     <!-- Search & Filter Card -->
     <div class="filter-card">
         <form method="GET" action="{{ url_for('products') }}" class="filter-form" id="product-filter-form">
             <div class="form-group">
-                <label for="search">Product Name Search</label>
+                <label for="search">Product Search</label>
                 <input 
                     type="text" 
                     id="search" 
@@ -80,13 +95,17 @@
 
     <!-- Active Filters Summary (if any) -->
     {% if search_query or selected_category or min_price or max_price %}
-        <div style="margin-bottom: 1rem; font-size: 0.9rem; color: var(--text-muted);">
-            <span>Showing results for: </span>
-            {% if search_query %}<strong>Keyword:</strong> "{{ search_query }}" {% endif %}
-            {% if selected_category %}<strong>Category:</strong> {{ selected_category }} {% endif %}
-            {% if min_price %}<strong>Min:</strong> ₹{{ min_price }} {% endif %}
-            {% if max_price %}<strong>Max:</strong> ₹{{ max_price }} {% endif %}
-            <span style="margin-left: 8px;">({{ products|length }} item(s) found)</span>
+        <div style="margin-bottom: 1.5rem; font-size: 0.92rem; color: var(--text-muted); background: var(--surface-subtle); padding: 0.65rem 1rem; border-radius: var(--radius-sm); border: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem;">
+            <div>
+                <span>Filtering by: </span>
+                {% if search_query %}<strong>Keyword:</strong> "{{ search_query }}" &nbsp; {% endif %}
+                {% if selected_category %}<strong>Category:</strong> {{ selected_category }} &nbsp; {% endif %}
+                {% if min_price %}<strong>Min:</strong> ₹{{ min_price }} &nbsp; {% endif %}
+                {% if max_price %}<strong>Max:</strong> ₹{{ max_price }} &nbsp; {% endif %}
+            </div>
+            <div>
+                <span class="badge-qty">{{ products|length }} item(s) found</span>
+            </div>
         </div>
     {% endif %}
 
@@ -131,7 +150,7 @@
                         <!-- Card Action Buttons -->
                         <div class="product-card-actions">
                             <a href="{{ url_for('product_detail', product_id=product['id']) }}" class="btn btn-sm btn-outline btn-block" id="btn-view-details-{{ product['id'] }}">
-                                View Details
+                                View Details &rarr;
                             </a>
 
                             <!-- Add to Cart Form -->
@@ -158,8 +177,8 @@
         <div class="empty-state-card" id="no-products-found">
             <div class="empty-icon">🔍</div>
             <h3>No products found</h3>
-            <p>No catalog items matched your selected search filters or criteria.</p>
-            <div style="margin-top: 1rem;">
+            <p>No catalog items matched your selected search filters or price criteria.</p>
+            <div style="margin-top: 1.5rem;">
                 <a href="{{ url_for('products') }}" class="btn btn-outline">Clear All Filters</a>
             </div>
         </div>

@@ -1,0 +1,172 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Products & Inventory - NexusMart Admin{% endblock %}
+
+{% block content %}
+<div class="dashboard-container" style="max-width: 1240px;">
+    <!-- Admin Command Header -->
+    <div class="dashboard-header" style="background: linear-gradient(135deg, #0F172A 0%, #1E293B 100%); color: #FFFFFF; padding: 2.25rem; border-radius: var(--radius-lg); margin-bottom: 2rem; border: 1px solid rgba(255, 255, 255, 0.08); box-shadow: var(--shadow-md);">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1.25rem;">
+            <div>
+                <div style="display: inline-flex; align-items: center; gap: 8px; background: rgba(99, 102, 241, 0.2); border: 1px solid rgba(165, 180, 252, 0.3); color: #C7D2FE; padding: 0.35rem 0.85rem; border-radius: var(--radius-full); font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 0.85rem;">
+                    <span class="admin-badge-dot"></span> Inventory Subsystem
+                </div>
+                <h1 style="color: #FFFFFF; font-size: 2.1rem; margin-bottom: 0.4rem;">Product Catalog &amp; Stock Control</h1>
+                <p style="color: #94A3B8; margin-bottom: 0; font-size: 0.95rem;">Add new items to the catalog, update pricing, descriptions, and manage live stock units.</p>
+            </div>
+            <div style="display: flex; gap: 0.75rem;">
+                <a href="{{ url_for('admin_dashboard') }}" class="btn btn-sm btn-outline" style="border-color: rgba(255,255,255,0.3); color: #FFFFFF;">
+                    &larr; Admin Overview
+                </a>
+                <a href="{{ url_for('admin_logout') }}" class="btn btn-sm btn-danger">
+                    🚪 Logout
+                </a>
+            </div>
+        </div>
+
+        <!-- Navigation Tabs -->
+        <div style="margin-top: 1.75rem; display: flex; gap: 0.5rem; flex-wrap: wrap; border-top: 1px solid rgba(255,255,255,0.12); padding-top: 1.25rem;">
+            <a href="{{ url_for('admin_dashboard') }}" class="btn btn-sm btn-outline" style="border-color: rgba(255,255,255,0.25); color: #E2E8F0;">
+                📊 Overview
+            </a>
+            <a href="{{ url_for('admin_products') }}" class="btn btn-sm btn-primary" style="background: #4F46E5; border-color: #4F46E5;">
+                📦 Products & Stock (FR-17, FR-18)
+            </a>
+            <a href="{{ url_for('admin_orders') }}" class="btn btn-sm btn-outline" style="border-color: rgba(255,255,255,0.25); color: #E2E8F0;">
+                📑 Customer Orders (FR-20)
+            </a>
+            <a href="{{ url_for('admin_coupons') }}" class="btn btn-sm btn-outline" style="border-color: rgba(255,255,255,0.25); color: #E2E8F0;">
+                🏷️ Coupons & Discounts (FR-19)
+            </a>
+        </div>
+    </div>
+
+    <!-- Add New Product Card -->
+    <div class="profile-card" style="margin-bottom: 2rem;">
+        <h2 style="font-size: 1.35rem; margin-bottom: 0.35rem; color: var(--text-main);">➕ Add New Catalog Product</h2>
+        <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 1.5rem;">Create a new item in the store catalog. Will immediately become available to shoppers.</p>
+
+        <form method="POST" action="{{ url_for('admin_product_add') }}" id="form-add-product" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.25rem;">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+
+            <div>
+                <label for="prod-name" style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.35rem;">Product Name *</label>
+                <input type="text" id="prod-name" name="name" class="form-control" placeholder="e.g. Wireless Noise-Cancelling Headphones" required>
+            </div>
+
+            <div>
+                <label for="prod-category" style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.35rem;">Category *</label>
+                <input type="text" id="prod-category" name="category" class="form-control" placeholder="e.g. Electronics" list="category-options" required>
+                <datalist id="category-options">
+                    {% for c in categories %}
+                        <option value="{{ c }}"></option>
+                    {% endfor %}
+                    <option value="Electronics"></option>
+                    <option value="Clothing"></option>
+                    <option value="Footwear"></option>
+                    <option value="Accessories"></option>
+                    <option value="Bags"></option>
+                </datalist>
+            </div>
+
+            <div>
+                <label for="prod-price" style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.35rem;">Price (INR ₹) *</label>
+                <input type="number" step="0.01" min="0" id="prod-price" name="price" class="form-control" placeholder="e.g. 1999.00" required>
+            </div>
+
+            <div>
+                <label for="prod-stock" style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.35rem;">Initial Stock Units *</label>
+                <input type="number" min="0" id="prod-stock" name="stock" class="form-control" placeholder="e.g. 25" required>
+            </div>
+
+            <div style="grid-column: 1 / -1;">
+                <label for="prod-desc" style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.35rem;">Product Description</label>
+                <textarea id="prod-desc" name="description" class="form-control" rows="2" placeholder="Brief marketing and technical description of the product..."></textarea>
+            </div>
+
+            <div style="grid-column: 1 / -1; display: flex; justify-content: flex-end;">
+                <button type="submit" class="btn btn-primary" id="btn-submit-new-product">
+                    + Add Product to Storefront &rarr;
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Active Catalog Table -->
+    <div class="profile-card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 0.75rem;">
+            <div>
+                <h2 style="font-size: 1.35rem; margin-bottom: 0.25rem; color: var(--text-main);">Current Product Catalog ({{ products|length }} Items)</h2>
+                <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 0;">Adjust inventory stock units directly and preview storefront item pages.</p>
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="data-table" id="admin-products-table">
+                <thead>
+                    <tr>
+                        <th style="width: 60px;">ID</th>
+                        <th>Product Details</th>
+                        <th>Category</th>
+                        <th>Price</th>
+                        <th>Stock Adjustment</th>
+                        <th style="text-align: right;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for p in products %}
+                        <tr>
+                            <td style="font-family: var(--font-mono); color: var(--text-subtle);">#{{ p['id'] }}</td>
+                            <td>
+                                <strong style="color: var(--text-main);">{{ p['name'] }}</strong>
+                                <div style="font-size: 0.82rem; color: var(--text-muted); max-width: 320px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px;">
+                                    {{ p['description'] }}
+                                </div>
+                            </td>
+                            <td>
+                                <span class="product-category-tag" style="margin: 0;">
+                                    {{ p['category'] }}
+                                </span>
+                            </td>
+                            <td style="font-family: var(--font-mono); font-weight: 700; color: var(--text-main);">₹{{ "%.2f"|format(p['price']) }}</td>
+                            <td>
+                                <form method="POST" action="{{ url_for('admin_stock_update', product_id=p['id']) }}" style="display: inline-flex; align-items: center; gap: 6px;">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                                    <input 
+                                        type="number" 
+                                        name="stock" 
+                                        value="{{ p['stock'] }}" 
+                                        min="0" 
+                                        class="quantity-input"
+                                        style="width: 75px; padding: 4px 8px; font-weight: 700; color: {% if p['stock'] < 5 %}#dc2626{% else %}#15803d{% endif %};"
+                                        id="stock-input-{{ p['id'] }}"
+                                    >
+                                    <button type="submit" class="btn btn-sm btn-outline" id="btn-update-stock-{{ p['id'] }}" title="Save Stock">
+                                        Save
+                                    </button>
+                                </form>
+                                {% if p['stock'] < 5 %}
+                                    <div style="font-size: 0.72rem; color: #dc2626; font-weight: 700; margin-top: 2px;">⚠️ Low Stock</div>
+                                {% endif %}
+                            </td>
+                            <td style="text-align: right;">
+                                <div style="display: inline-flex; gap: 6px;">
+                                    <a href="{{ url_for('product_detail', product_id=p['id']) }}" class="btn btn-sm btn-outline" target="_blank" title="Preview on Store">
+                                        View
+                                    </a>
+                                    <form method="POST" action="{{ url_for('admin_product_delete', product_id=p['id']) }}" onsubmit="return confirm('Are you sure you want to delete Product #{{ p['id'] }} ({{ p['name'] }})?');" style="display: inline;">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                                        <button type="submit" class="btn btn-sm btn-danger" id="btn-delete-product-{{ p['id'] }}">
+                                            Delete
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

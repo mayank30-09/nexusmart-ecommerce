@@ -3,12 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="NexusMart - Discover quality electronics, fashion, footwear, and accessories with fast shipping and secure payments.">
+    <meta name="description" content="NexusMart - Curated lifestyle electronics, modern fashion, footwear, and essentials with fast dispatch and secure payments.">
     <title>{% block title %}NexusMart - Smart Lifestyle & Tech Store{% endblock %}</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    
+    <!-- Editorial & Modern Typography Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <script>
+        // Force reload if restored from browser back-forward cache (bfcache)
+        window.addEventListener('pageshow', function(event) {
+            if (event.persisted || (window.performance && window.performance.navigation && window.performance.navigation.type === 2)) {
+                window.location.reload();
+            }
+        });
+    </script>
     {% block extra_head %}{% endblock %}
 </head>
 <body>
@@ -16,18 +30,43 @@
     <!-- Main Navigation Header -->
     <header class="navbar">
         <div class="nav-container">
-            <a href="{% if session.get('customer_id') %}{{ url_for('dashboard') }}{% else %}{{ url_for('products') }}{% endif %}" class="brand-logo" id="brand-home-link">
-                <span class="brand-icon">⚡</span>
+            <a href="{% if session.get('customer_id') %}{{ url_for('dashboard') }}{% else %}{{ url_for('products') }}{% endif %}" class="brand-logo" id="brand-home-link" aria-label="NexusMart Home">
+                <span class="brand-mark">
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+                    </svg>
+                </span>
                 <span class="brand-text">Nexus<span class="brand-accent">Mart</span></span>
             </a>
 
-            <nav>
+            <!-- Mobile Navigation Toggle -->
+            <button class="nav-mobile-toggle" id="nav-mobile-toggle" aria-label="Toggle navigation menu" aria-expanded="false" onclick="document.querySelector('.nav-links').classList.toggle('nav-mobile-open'); this.setAttribute('aria-expanded', this.getAttribute('aria-expanded') === 'true' ? 'false' : 'true');">
+                <span class="bar"></span>
+                <span class="bar"></span>
+                <span class="bar"></span>
+            </button>
+
+            <nav aria-label="Primary Navigation">
                 <ul class="nav-links">
                     <li><a href="{{ url_for('products') }}" id="nav-products">Catalog</a></li>
                     {% if session.get("customer_id") %}
+                        {% if is_admin %}
+                            <li>
+                                <a href="{{ url_for('admin_dashboard') }}" id="nav-admin-portal" class="nav-admin-link">
+                                    <span class="admin-badge-dot"></span> Operations
+                                </a>
+                            </li>
+                        {% endif %}
                         <li><a href="{{ url_for('dashboard') }}" id="nav-dashboard">Dashboard</a></li>
                         <li>
-                            <a href="{{ url_for('view_cart') }}" id="nav-cart" class="nav-cart-btn">
+                            <a href="{{ url_for('view_cart') }}" id="nav-cart" class="nav-cart-btn" aria-label="View Shopping Cart">
+                                <span class="nav-cart-icon">
+                                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                        <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
+                                        <line x1="3" y1="6" x2="21" y2="6"></line>
+                                        <path d="M16 10a4 4 0 0 1-8 0"></path>
+                                    </svg>
+                                </span>
                                 <span>Cart</span>
                                 {% if cart_count and cart_count > 0 %}
                                     <span class="cart-badge" id="cart-badge-count">{{ cart_count }}</span>
@@ -36,7 +75,12 @@
                         </li>
                         <li><a href="{{ url_for('orders_list') }}" id="nav-orders">Orders</a></li>
                         <li><a href="{{ url_for('profile') }}" id="nav-profile">Profile</a></li>
-                        <li><span class="user-tag" id="user-greeting-tag">👤 {{ session.get("customer_name") }}</span></li>
+                        <li class="nav-user-item">
+                            <span class="user-tag" id="user-greeting-tag">
+                                <span class="user-avatar-initial">{{ session.get("customer_name")[:1]|upper }}</span>
+                                <span class="user-name-text">{{ session.get("customer_name") }}</span>
+                            </span>
+                        </li>
                         <li><a href="{{ url_for('logout') }}" class="btn btn-sm btn-outline" id="nav-logout">Logout</a></li>
                     {% else %}
                         <li><a href="{{ url_for('login') }}" id="nav-login">Sign In</a></li>
@@ -48,14 +92,26 @@
     </header>
 
     <!-- Main Content Area -->
-    <main class="main-content">
+    <main class="main-content" id="main-content">
         <!-- Flash Alert Messages -->
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
-                <div id="flash-messages-container">
+                <div id="flash-messages-container" class="flash-messages-container" aria-live="polite">
                     {% for category, message in messages %}
                         <div class="alert alert-{{ category }}" role="alert">
-                            {{ message }}
+                            <span class="alert-icon" aria-hidden="true">
+                                {% if category == 'success' %}
+                                    <svg viewBox="0 0 20 20" width="16" height="16" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+                                {% elif category == 'danger' or category == 'error' %}
+                                    <svg viewBox="0 0 20 20" width="16" height="16" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/></svg>
+                                {% elif category == 'warning' %}
+                                    <svg viewBox="0 0 20 20" width="16" height="16" fill="currentColor"><path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+                                {% else %}
+                                    <svg viewBox="0 0 20 20" width="16" height="16" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/></svg>
+                                {% endif %}
+                            </span>
+                            <div class="alert-content">{{ message }}</div>
+                            <button type="button" class="alert-close" aria-label="Dismiss alert" onclick="this.parentElement.style.display='none';">&times;</button>
                         </div>
                     {% endfor %}
                 </div>
@@ -65,34 +121,50 @@
         {% block content %}{% endblock %}
     </main>
 
-    <!-- Professional E-Commerce Footer -->
+    <!-- Professional E-Commerce Editorial Footer -->
     <footer class="footer">
         <div class="footer-container">
             <div class="footer-grid">
                 <div class="footer-col brand-col">
                     <div class="footer-brand">
-                        <span class="brand-icon">⚡</span>
+                        <span class="brand-mark-footer">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+                            </svg>
+                        </span>
                         <span class="brand-text">Nexus<span class="brand-accent">Mart</span></span>
                     </div>
                     <p class="footer-tagline">
-                        Your trusted destination for premium electronics, modern fashion, and daily essentials. Designed for speed, convenience, and security.
+                        Curated goods for intentional living. High-performance electronics, refined apparel, and daily essentials with end-to-end security and express fulfillment.
                     </p>
                     <div class="payment-trust-badges">
-                        <span class="trust-badge">💳 Razorpay Verified</span>
-                        <span class="trust-badge">🔒 256-Bit SSL</span>
-                        <span class="trust-badge">⚡ Instant UPI</span>
-                        <span class="trust-badge">💵 Cash on Delivery</span>
+                        <span class="trust-badge">
+                            <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg>
+                            Razorpay Verified
+                        </span>
+                        <span class="trust-badge">
+                            <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                            256-Bit SSL
+                        </span>
+                        <span class="trust-badge">
+                            <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+                            Instant UPI
+                        </span>
+                        <span class="trust-badge">
+                            <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+                            Cash on Delivery
+                        </span>
                     </div>
                 </div>
 
                 <div class="footer-col">
-                    <h4>Quick Links</h4>
+                    <h4>Collections</h4>
                     <ul class="footer-links">
-                        <li><a href="{{ url_for('products') }}">All Products</a></li>
-                        <li><a href="{{ url_for('products', category='Electronics') }}">Electronics</a></li>
-                        <li><a href="{{ url_for('products', category='Clothing') }}">Fashion & Apparel</a></li>
+                        <li><a href="{{ url_for('products') }}">All Collections</a></li>
+                        <li><a href="{{ url_for('products', category='Electronics') }}">Electronics & Audio</a></li>
+                        <li><a href="{{ url_for('products', category='Clothing') }}">Apparel & Wardrobe</a></li>
                         <li><a href="{{ url_for('products', category='Footwear') }}">Footwear</a></li>
-                        <li><a href="{{ url_for('products', category='Accessories') }}">Accessories</a></li>
+                        <li><a href="{{ url_for('products', category='Accessories') }}">Modern Accessories</a></li>
                     </ul>
                 </div>
 
@@ -100,33 +172,34 @@
                     <h4>Customer Care</h4>
                     <ul class="footer-links">
                         {% if session.get('customer_id') %}
-                            <li><a href="{{ url_for('orders_list') }}">My Orders & Invoices</a></li>
-                            <li><a href="{{ url_for('profile') }}">Delivery Addresses</a></li>
-                            <li><a href="{{ url_for('view_cart') }}">Shopping Cart</a></li>
+                            <li><a href="{{ url_for('orders_list') }}">Order History & Invoices</a></li>
+                            <li><a href="{{ url_for('profile') }}">Saved Delivery Addresses</a></li>
+                            <li><a href="{{ url_for('view_cart') }}">Shopping Bag</a></li>
                         {% else %}
                             <li><a href="{{ url_for('login') }}">Customer Sign In</a></li>
-                            <li><a href="{{ url_for('register') }}">Create New Account</a></li>
+                            <li><a href="{{ url_for('register') }}">Create Account</a></li>
                         {% endif %}
                         <li><a href="{{ url_for('about') }}">About NexusMart</a></li>
-                        <li><a href="{{ url_for('contact') }}">Help & Support</a></li>
+                        <li><a href="{{ url_for('contact') }}">Help Desk & FAQ</a></li>
+                        <li><a href="{{ url_for('admin_login') }}" class="footer-admin-link">Staff Operations Console</a></li>
                     </ul>
                 </div>
 
                 <div class="footer-col">
-                    <h4>Security & Policies</h4>
+                    <h4>Assurance & Legal</h4>
                     <ul class="footer-links">
                         <li><a href="{{ url_for('privacy') }}">Privacy Policy</a></li>
                         <li><a href="{{ url_for('terms') }}">Terms of Service</a></li>
-                        <li><span class="text-muted">Safe 7-Day Returns</span></li>
-                        <li><span class="text-muted">Direct Order Tracking</span></li>
+                        <li><span class="footer-static-note">✓ 7-Day Hassle-Free Returns</span></li>
+                        <li><span class="footer-static-note">✓ Transparent Pricing in INR (₹)</span></li>
                     </ul>
                 </div>
             </div>
 
             <div class="footer-bottom">
-                <p>&copy; 2026 NexusMart E-Commerce. All rights reserved. Prices shown in Indian Rupees (₹).</p>
+                <p>&copy; 2026 NexusMart E-Commerce. All rights reserved. Crafted with precision for software engineering excellence.</p>
                 <div class="footer-status-pill">
-                    <span class="status-indicator-dot"></span> System Operational
+                    <span class="status-indicator-dot"></span> Store Services Operational
                 </div>
             </div>
         </div>

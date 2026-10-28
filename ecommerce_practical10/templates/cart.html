@@ -4,16 +4,18 @@
 
 {% block content %}
 <div class="cart-container">
-    <div style="margin-bottom: 1.25rem; display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 1rem;">
+    <div style="margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 1.25rem;">
         <div>
+            <div style="font-size: 0.8rem; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 0.25rem;">Your Selection</div>
             <h1>Shopping Cart</h1>
-            <p>Manage your selected items, update quantities, and review order totals before checkout.</p>
+            <p style="margin: 0;">Review your selected pieces, adjust quantities, and proceed to secure checkout.</p>
         </div>
         {% if items %}
             <form method="POST" action="{{ url_for('clear_cart') }}" onsubmit="return confirm('Are you sure you want to clear your entire cart?');">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
                 <button type="submit" class="btn btn-sm btn-outline text-danger" id="btn-clear-cart">
-                    🗑️ Clear Cart
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                    Clear Entire Bag
                 </button>
             </form>
         {% endif %}
@@ -25,25 +27,29 @@
                 <table class="cart-table" id="cart-items-table">
                     <thead>
                         <tr>
-                            <th>Product</th>
+                            <th>Product Description</th>
                             <th>Category</th>
                             <th>Unit Price</th>
-                            <th style="min-width: 150px;">Quantity</th>
+                            <th style="min-width: 160px;">Quantity</th>
                             <th>Subtotal</th>
-                            <th>Action</th>
+                            <th style="text-align: right;">Action</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for item in items %}
                             <tr id="cart-row-{{ item['cart_item_id'] }}">
                                 <td>
-                                    <strong>{{ item['name'] }}</strong>
-                                    <div style="font-size: 0.8rem; color: var(--text-muted);">Stock Available: {{ item['stock'] }}</div>
+                                    <div style="font-weight: 700; color: var(--text-main); font-size: 1.02rem;">{{ item['name'] }}</div>
+                                    <div style="font-size: 0.8rem; color: var(--text-subtle); margin-top: 2px;">
+                                        Stock available: <span style="font-family: var(--font-mono); font-weight: 600;">{{ item['stock'] }}</span> units
+                                    </div>
                                 </td>
                                 <td>
                                     <span class="product-category-tag" style="margin: 0;">{{ item['category'] }}</span>
                                 </td>
-                                <td>₹{{ "%.2f"|format(item['price']) }}</td>
+                                <td style="font-family: var(--font-mono); font-weight: 600; color: var(--text-main);">
+                                    ₹{{ "%.2f"|format(item['price']) }}
+                                </td>
                                 <td>
                                     <form method="POST" action="{{ url_for('update_cart_quantity', item_id=item['cart_item_id']) }}" class="cart-qty-form" id="update-form-{{ item['cart_item_id'] }}">
                                         <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
@@ -54,23 +60,23 @@
                                             min="1" 
                                             max="{{ item['stock'] }}" 
                                             class="quantity-input" 
-                                            style="width: 70px;"
+                                            style="width: 70px; padding: 0.4rem;"
                                             id="cart-qty-input-{{ item['cart_item_id'] }}"
                                             required
                                         >
-                                        <button type="submit" class="btn btn-sm btn-secondary" style="padding: 4px 8px;" id="btn-update-qty-{{ item['cart_item_id'] }}">
+                                        <button type="submit" class="btn btn-sm btn-secondary" id="btn-update-qty-{{ item['cart_item_id'] }}">
                                             Update
                                         </button>
                                     </form>
                                 </td>
-                                <td style="font-weight: 600;" id="cart-subtotal-{{ item['cart_item_id'] }}">
+                                <td style="font-family: var(--font-mono); font-weight: 700; color: var(--accent); font-size: 1.05rem;" id="cart-subtotal-{{ item['cart_item_id'] }}">
                                     ₹{{ "%.2f"|format(item['subtotal']) }}
                                 </td>
-                                <td>
+                                <td style="text-align: right;">
                                     <form method="POST" action="{{ url_for('remove_cart_item', item_id=item['cart_item_id']) }}">
                                         <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-                                        <button type="submit" class="btn btn-sm btn-outline text-danger" id="btn-remove-item-{{ item['cart_item_id'] }}">
-                                            Remove
+                                        <button type="submit" class="btn btn-sm btn-outline text-danger" id="btn-remove-item-{{ item['cart_item_id'] }}" title="Remove from bag">
+                                            ✕ Remove
                                         </button>
                                     </form>
                                 </td>
@@ -81,16 +87,19 @@
             </div>
 
             <div class="cart-summary">
-                <div class="total-box">
-                    <span class="total-label">Grand Cart Total:</span>
-                    <span class="total-amount" id="cart-grand-total">₹{{ "%.2f"|format(cart_total) }}</span>
-                </div>
-
                 <div class="cart-actions">
                     <a href="{{ url_for('products') }}" class="btn btn-outline" id="btn-continue-shopping">
-                        &larr; Continue Shopping
+                        &larr; Continue Exploring
                     </a>
-                    <a href="{{ url_for('checkout') }}" class="btn btn-primary" id="btn-proceed-checkout" style="font-weight: 600;">
+                </div>
+
+                <div style="display: flex; align-items: center; gap: 2rem; flex-wrap: wrap;">
+                    <div class="total-box">
+                        <span class="total-label">Subtotal Before Discounts:</span>
+                        <span class="total-amount" id="cart-grand-total">₹{{ "%.2f"|format(cart_total) }}</span>
+                    </div>
+
+                    <a href="{{ url_for('checkout') }}" class="btn btn-primary btn-lg" id="btn-proceed-checkout">
                         Proceed to Checkout &rarr;
                     </a>
                 </div>
@@ -98,11 +107,13 @@
         </div>
     {% else %}
         <div class="cart-empty-state" id="cart-empty-box">
-            <div class="empty-icon">🛒</div>
+            <div class="empty-icon">🛍️</div>
             <h2>Your Cart is Currently Empty</h2>
-            <p>Looks like you haven't added any products to your shopping cart yet.</p>
-            <div style="margin-top: 1.5rem;">
-                <a href="{{ url_for('products') }}" class="btn btn-primary" id="btn-empty-explore">
+            <p style="max-width: 480px; margin: 0 auto 1.75rem auto;">
+                Explore our catalog to find premium audio, modern apparel, footwear, and travel accessories.
+            </p>
+            <div>
+                <a href="{{ url_for('products') }}" class="btn btn-primary btn-lg" id="btn-empty-explore">
                     Explore Products Now &rarr;
                 </a>
             </div>

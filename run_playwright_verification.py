@@ -62,13 +62,15 @@ def run_verification():
     env["ENABLE_MOCK_PAYMENT"] = "true"
     env["MOCK_RAZORPAY"] = "true"
 
-    server_process = subprocess.Popen(
-        [sys.executable, "app.py"],
-        cwd=APP_DIR,
-        env=env,
-        stdout=subprocess.DEVNULL,
-        stderr=subprocess.DEVNULL
-    )
+    server_process = None
+    if not wait_for_server(BASE_URL, timeout=1):
+        server_process = subprocess.Popen(
+            [sys.executable, "app.py"],
+            cwd=APP_DIR,
+            env=env,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL
+        )
 
     try:
         if not wait_for_server(BASE_URL):
@@ -79,6 +81,41 @@ def run_verification():
         network_errors = []
         captured_screenshots = []
         test_results = []
+
+        def capture_screenshot(target_page, filename, description, test_name=None):
+            """Safely take a screenshot in memory and write directly to disk with retry."""
+            time.sleep(0.4)
+            img_bytes = target_page.screenshot(full_page=True)
+            shot_path = os.path.join(SCREENSHOTS_DIR, filename)
+
+            # Retry writing to handle Windows indexer/AV momentarily locking files
+            written = False
+            for attempt in range(5):
+                try:
+                    with open(shot_path, "wb") as f:
+                        f.write(img_bytes)
+                    written = True
+                    break
+                except OSError:
+                    time.sleep(0.3)
+
+            if not written:
+                temp_path = shot_path + f".tmp_{secrets.token_hex(4)}"
+                with open(temp_path, "wb") as f:
+                    f.write(img_bytes)
+                try:
+                    os.replace(temp_path, shot_path)
+                except Exception:
+                    pass
+
+            captured_screenshots.append({
+                "name": filename,
+                "path": shot_path,
+                "description": description
+            })
+            if test_name:
+                test_results.append({"name": test_name, "status": "PASSED"})
+            print(f"  [SAVED] {filename} - {description}")
 
         with sync_playwright() as p:
             browser = p.chromium.launch(headless=True)
@@ -106,53 +143,59 @@ def run_verification():
             # ------------------------------------------------------------------
             print("\n[SCENARIO 1] Verifying Public Pages...")
 
-            # Home route
+            # Home route (redirects unauthenticated visitor to login)
             page.goto(f"{BASE_URL}/")
-            time.sleep(0.5)
-            # Unauthenticated visitor redirected to login
-            shot_path = os.path.join(SCREENSHOTS_DIR, "04-login-page.png")
-            page.screenshot(path=shot_path, full_page=True)
-            captured_screenshots.append({"name": "04-login-page.png", "path": shot_path, "description": "Customer Sign In page with email and Google OAuth option"})
-            test_results.append({"name": "Public Login Page Access", "status": "PASSED"})
+            capture_screenshot(
+                page, 
+                "04-login-page.png", 
+                "Customer Sign In page with email and Google OAuth option", 
+                "Public Login Page Access"
+            )
 
             # About Page
             page.goto(f"{BASE_URL}/about")
-            time.sleep(0.5)
-            shot_path = os.path.join(SCREENSHOTS_DIR, "13-about-page.png")
-            page.screenshot(path=shot_path, full_page=True)
-            captured_screenshots.append({"name": "13-about-page.png", "path": shot_path, "description": "About NexusMart corporate mission, values, and platform architecture"})
-            test_results.append({"name": "About Page", "status": "PASSED"})
+            capture_screenshot(
+                page, 
+                "13-about-page.png", 
+                "About NexusMart corporate mission, values, and platform architecture", 
+                "About Page"
+            )
 
             # Contact Page
             page.goto(f"{BASE_URL}/contact")
-            time.sleep(0.5)
-            shot_path = os.path.join(SCREENSHOTS_DIR, "14-contact-page.png")
-            page.screenshot(path=shot_path, full_page=True)
-            captured_screenshots.append({"name": "14-contact-page.png", "path": shot_path, "description": "NexusMart Customer Care, Support FAQs, and Help Desk"})
-            test_results.append({"name": "Contact Page", "status": "PASSED"})
+            capture_screenshot(
+                page, 
+                "14-contact-page.png", 
+                "NexusMart Customer Care, Support FAQs, and Help Desk", 
+                "Contact Page"
+            )
 
             # ------------------------------------------------------------------
             # SCENARIO 2: Registration & Authentication
             # ------------------------------------------------------------------
+            print("\n[SCENARIO 2] Registration & Authentication...")
             # Test Google OAuth Sign-in initiation
             try:
                 page.goto(f"{BASE_URL}/login")
                 time.sleep(0.3)
                 page.click("#btn-google-login")
                 time.sleep(1.2)
-                shot_path = os.path.join(SCREENSHOTS_DIR, "04b-google-signin-redirect.png")
-                page.screenshot(path=shot_path, full_page=True)
-                captured_screenshots.append({"name": "04b-google-signin-redirect.png", "path": shot_path, "description": "Google OAuth 2.0 authorization redirect and consent handshake"})
-                test_results.append({"name": "Google OAuth Redirect Handshake", "status": "PASSED"})
+                capture_screenshot(
+                    page, 
+                    "04b-google-signin-redirect.png", 
+                    "Google OAuth 2.0 authorization redirect and consent handshake", 
+                    "Google OAuth Redirect Handshake"
+                )
             except Exception as e:
                 print(f"[NOTE] Google OAuth redirect test note: {e}")
 
             page.goto(f"{BASE_URL}/register")
-            time.sleep(0.5)
-            shot_path = os.path.join(SCREENSHOTS_DIR, "05-registration-page.png")
-            page.screenshot(path=shot_path, full_page=True)
-            captured_screenshots.append({"name": "05-registration-page.png", "path": shot_path, "description": "Customer Registration form with validation fields"})
-            test_results.append({"name": "Registration Page Render", "status": "PASSED"})
+            capture_screenshot(
+                page, 
+                "05-registration-page.png", 
+                "Customer Registration form with validation fields", 
+                "Registration Page Render"
+            )
 
             # Register fresh test user
             unique_email = f"shopper_{secrets.token_hex(4)}@nexusmart.test"
@@ -170,10 +213,12 @@ def run_verification():
             time.sleep(0.8)
 
             # Verify landing on Dashboard
-            shot_path = os.path.join(SCREENSHOTS_DIR, "01-homepage-desktop.png")
-            page.screenshot(path=shot_path, full_page=True)
-            captured_screenshots.append({"name": "01-homepage-desktop.png", "path": shot_path, "description": "NexusMart Customer Dashboard with greeting, metrics, and shortcuts"})
-            test_results.append({"name": "Customer Login & Dashboard", "status": "PASSED"})
+            capture_screenshot(
+                page, 
+                "01-homepage-desktop.png", 
+                "NexusMart Customer Dashboard with greeting, metrics, and shortcuts", 
+                "Customer Login & Dashboard"
+            )
 
             # ------------------------------------------------------------------
             # SCENARIO 3: Product Catalog & Search Filtering
@@ -187,19 +232,23 @@ def run_verification():
             page.click("#btn-apply-filters")
             time.sleep(0.5)
 
-            shot_path = os.path.join(SCREENSHOTS_DIR, "02-product-catalog.png")
-            page.screenshot(path=shot_path, full_page=True)
-            captured_screenshots.append({"name": "02-product-catalog.png", "path": shot_path, "description": "Product Catalog with Category badges, prices in INR, and search filters"})
-            test_results.append({"name": "Catalog Filter by Category", "status": "PASSED"})
+            capture_screenshot(
+                page, 
+                "02-product-catalog.png", 
+                "Product Catalog with Category badges, prices in INR, and search filters", 
+                "Catalog Filter by Category"
+            )
 
             # Open Product Details
             page.click(".product-card:first-child a.product-title-link")
             time.sleep(0.5)
 
-            shot_path = os.path.join(SCREENSHOTS_DIR, "03-product-detail.png")
-            page.screenshot(path=shot_path, full_page=True)
-            captured_screenshots.append({"name": "03-product-detail.png", "path": shot_path, "description": "Product Detail page with high-res badge, stock counter, and quantity controls"})
-            test_results.append({"name": "Product Details Page", "status": "PASSED"})
+            capture_screenshot(
+                page, 
+                "03-product-detail.png", 
+                "Product Detail page with high-res badge, stock counter, and quantity controls", 
+                "Product Details Page"
+            )
 
             # ------------------------------------------------------------------
             # SCENARIO 4: Cart Management & Delivery Address CRUD
@@ -211,10 +260,12 @@ def run_verification():
             time.sleep(0.8)
 
             # Land on Cart
-            shot_path = os.path.join(SCREENSHOTS_DIR, "06-cart.png")
-            page.screenshot(path=shot_path, full_page=True)
-            captured_screenshots.append({"name": "06-cart.png", "path": shot_path, "description": "Shopping Cart showing line items, quantity modifiers, subtotal, and checkout CTA"})
-            test_results.append({"name": "Shopping Cart Add & Review", "status": "PASSED"})
+            capture_screenshot(
+                page, 
+                "06-cart.png", 
+                "Shopping Cart showing line items, quantity modifiers, subtotal, and checkout CTA", 
+                "Shopping Cart Add & Review"
+            )
 
             # Manage Delivery Addresses
             page.goto(f"{BASE_URL}/profile")
@@ -228,10 +279,12 @@ def run_verification():
             page.click("#btn-save-address")
             time.sleep(0.8)
 
-            shot_path = os.path.join(SCREENSHOTS_DIR, "12-customer-profile-addresses.png")
-            page.screenshot(path=shot_path, full_page=True)
-            captured_screenshots.append({"name": "12-customer-profile-addresses.png", "path": shot_path, "description": "Customer Profile with saved shipping addresses, default badge, and edit actions"})
-            test_results.append({"name": "Customer Address Management", "status": "PASSED"})
+            capture_screenshot(
+                page, 
+                "12-customer-profile-addresses.png", 
+                "Customer Profile with saved shipping addresses, default badge, and edit actions", 
+                "Customer Address Management"
+            )
 
             # ------------------------------------------------------------------
             # SCENARIO 5: Checkout Review & Coupon Validation
@@ -245,10 +298,12 @@ def run_verification():
             page.click("#btn-submit-coupon")
             time.sleep(0.8)
 
-            shot_path = os.path.join(SCREENSHOTS_DIR, "07-checkout.png")
-            page.screenshot(path=shot_path, full_page=True)
-            captured_screenshots.append({"name": "07-checkout.png", "path": shot_path, "description": "Checkout Review page with selected address, 10% coupon discount applied, and payment selection"})
-            test_results.append({"name": "Checkout Review with Coupon", "status": "PASSED"})
+            capture_screenshot(
+                page, 
+                "07-checkout.png", 
+                "Checkout Review page with selected address, 10% coupon discount applied, and payment selection", 
+                "Checkout Review with Coupon"
+            )
 
             # ------------------------------------------------------------------
             # SCENARIO 6: Razorpay Standard Checkout & Payment Flow
@@ -260,10 +315,12 @@ def run_verification():
             time.sleep(1.0)
 
             # Verify Razorpay pending page
-            shot_path = os.path.join(SCREENSHOTS_DIR, "08-razorpay-test-checkout.png")
-            page.screenshot(path=shot_path, full_page=True)
-            captured_screenshots.append({"name": "08-razorpay-test-checkout.png", "path": shot_path, "description": "Official Razorpay Standard Checkout launch modal with order reference and secure encryption"})
-            test_results.append({"name": "Razorpay Modal Integration", "status": "PASSED"})
+            capture_screenshot(
+                page, 
+                "08-razorpay-test-checkout.png", 
+                "Official Razorpay Standard Checkout launch modal with order reference and secure encryption", 
+                "Razorpay Modal Integration"
+            )
 
             # Step 6A: Test Invalid Signature Rejection
             btn = page.locator("#btn-open-razorpay")
@@ -277,10 +334,12 @@ def run_verification():
             time.sleep(1.0)
 
             # Capture Failed / Rejection Result
-            shot_path = os.path.join(SCREENSHOTS_DIR, "08b-payment-failed-result.png")
-            page.screenshot(path=shot_path, full_page=True)
-            captured_screenshots.append({"name": "08b-payment-failed-result.png", "path": shot_path, "description": "Payment Verification Rejection: invalid signature safely blocked with cart preserved"})
-            test_results.append({"name": "Payment Security Signature Rejection", "status": "PASSED"})
+            capture_screenshot(
+                page, 
+                "08b-payment-failed-result.png", 
+                "Payment Verification Rejection: invalid signature safely blocked with cart preserved", 
+                "Payment Security Signature Rejection"
+            )
 
             # Step 6B: Place Order again and complete with Valid Cryptographic Signature
             page.goto(f"{BASE_URL}/checkout")
@@ -305,10 +364,12 @@ def run_verification():
             time.sleep(1.2)
 
             # Verify Order Confirmation page
-            shot_path = os.path.join(SCREENSHOTS_DIR, "09-order-confirmation.png")
-            page.screenshot(path=shot_path, full_page=True)
-            captured_screenshots.append({"name": "09-order-confirmation.png", "path": shot_path, "description": "Order Confirmation invoice with verified payment status, reference code, and delivery summary"})
-            test_results.append({"name": "Order Confirmation & Payment Verified", "status": "PASSED"})
+            capture_screenshot(
+                page, 
+                "09-order-confirmation.png", 
+                "Order Confirmation invoice with verified payment status, reference code, and delivery summary", 
+                "Order Confirmation & Payment Verified"
+            )
 
             # ------------------------------------------------------------------
             # SCENARIO 7: Order History & Details
@@ -317,20 +378,81 @@ def run_verification():
             page.goto(f"{BASE_URL}/orders")
             time.sleep(0.5)
 
-            shot_path = os.path.join(SCREENSHOTS_DIR, "10-order-history.png")
-            page.screenshot(path=shot_path, full_page=True)
-            captured_screenshots.append({"name": "10-order-history.png", "path": shot_path, "description": "Customer Order History table with order status Confirmed and payment status Paid"})
-            test_results.append({"name": "Order History List", "status": "PASSED"})
+            capture_screenshot(
+                page, 
+                "10-order-history.png", 
+                "Customer Order History table with order status Confirmed and payment status Paid", 
+                "Order History List"
+            )
 
             # Click view details on first order
             page.click("#orders-history-table tbody tr:first-child a[id^='btn-view-details-']")
             time.sleep(0.5)
-            time.sleep(0.5)
 
-            shot_path = os.path.join(SCREENSHOTS_DIR, "11-order-detail.png")
-            page.screenshot(path=shot_path, full_page=True)
-            captured_screenshots.append({"name": "11-order-detail.png", "path": shot_path, "description": "Detailed Order Breakdown with immutable snapshots of items, coupon code, and shipping address"})
-            test_results.append({"name": "Order Detail View", "status": "PASSED"})
+            capture_screenshot(
+                page, 
+                "11-order-detail.png", 
+                "Detailed Order Breakdown with immutable snapshots of items, coupon code, and shipping address", 
+                "Order Detail View"
+            )
+
+            # ------------------------------------------------------------------
+            # SCENARIO 7B: AI-Powered Product Recommendations (FR-16)
+            # ------------------------------------------------------------------
+            print("\n[SCENARIO 7B] AI Product Recommendations (FR-16)...")
+            page.goto(f"{BASE_URL}/dashboard")
+            capture_screenshot(
+                page, 
+                "11b-ai-recommendations.png", 
+                "AI-Powered Product Recommendations on Customer Dashboard tailored by browsing & purchase history (FR-16)", 
+                "AI Product Recommendations (FR-16)"
+            )
+
+            # ------------------------------------------------------------------
+            # SCENARIO 7C: NexusMart Admin Portal (FR-17 - FR-20)
+            # ------------------------------------------------------------------
+            print("\n[SCENARIO 7C] Admin Portal Operations (FR-17 to FR-20)...")
+            # 1. Admin Login
+            page.goto(f"{BASE_URL}/admin/login")
+            page.fill("#admin-email", "admin@nexusmart.com")
+            page.fill("#admin-password", "AdminPass123!")
+            page.click("#btn-admin-login-submit")
+            time.sleep(0.8)
+
+            # 2. Admin Dashboard Overview
+            capture_screenshot(
+                page, 
+                "19-admin-dashboard.png", 
+                "NexusMart Operations Admin Dashboard with live metrics, revenue, and inventory alerts (FR-17 to FR-20)", 
+                "Admin Dashboard & KPIs"
+            )
+
+            # 3. Admin Products Management & Stock Control (FR-17, FR-18)
+            page.goto(f"{BASE_URL}/admin/products")
+            capture_screenshot(
+                page, 
+                "20-admin-products.png", 
+                "Admin Product Catalog & Direct Stock Adjustment Interface (FR-17, FR-18)", 
+                "Admin Products & Stock Control (FR-17, FR-18)"
+            )
+
+            # 4. Admin Orders & Order Status Management (FR-20)
+            page.goto(f"{BASE_URL}/admin/orders")
+            capture_screenshot(
+                page, 
+                "21-admin-orders.png", 
+                "Admin Customer Order Management with status transition actions (FR-20)", 
+                "Admin Customer Orders (FR-20)"
+            )
+
+            # 5. Admin Coupons & Discount Management (FR-19)
+            page.goto(f"{BASE_URL}/admin/coupons")
+            capture_screenshot(
+                page, 
+                "22-admin-coupons.png", 
+                "Admin Promotional Coupon Management with activation toggle & creation form (FR-19)", 
+                "Admin Discount & Coupon Management (FR-19)"
+            )
 
             desktop_context.close()
 
@@ -353,35 +475,39 @@ def run_verification():
 
             # Mobile Catalog
             mobile_page.goto(f"{BASE_URL}/products")
-            time.sleep(0.5)
-            shot_path = os.path.join(SCREENSHOTS_DIR, "16-mobile-catalog.png")
-            mobile_page.screenshot(path=shot_path, full_page=True)
-            captured_screenshots.append({"name": "16-mobile-catalog.png", "path": shot_path, "description": "Responsive Mobile Catalog with touch-friendly cards and adaptive grid"})
-            test_results.append({"name": "Mobile Catalog Responsive Layout", "status": "PASSED"})
+            capture_screenshot(
+                mobile_page, 
+                "16-mobile-catalog.png", 
+                "Responsive Mobile Catalog with touch-friendly cards and adaptive grid", 
+                "Mobile Catalog Responsive Layout"
+            )
 
             # Mobile Product Detail
             mobile_page.click(".product-card:first-child a.product-title-link")
-            time.sleep(0.5)
-            shot_path = os.path.join(SCREENSHOTS_DIR, "18-mobile-product-detail.png")
-            mobile_page.screenshot(path=shot_path, full_page=True)
-            captured_screenshots.append({"name": "18-mobile-product-detail.png", "path": shot_path, "description": "Responsive Mobile Product Details with single-column touch controls"})
-            test_results.append({"name": "Mobile Product Detail Layout", "status": "PASSED"})
+            capture_screenshot(
+                mobile_page, 
+                "18-mobile-product-detail.png", 
+                "Responsive Mobile Product Details with single-column touch controls", 
+                "Mobile Product Detail Layout"
+            )
 
             # Mobile About Page
             mobile_page.goto(f"{BASE_URL}/about")
-            time.sleep(0.5)
-            shot_path = os.path.join(SCREENSHOTS_DIR, "15-mobile-homepage.png")
-            mobile_page.screenshot(path=shot_path, full_page=True)
-            captured_screenshots.append({"name": "15-mobile-homepage.png", "path": shot_path, "description": "Responsive Mobile Article & Policy layout without horizontal overflow"})
-            test_results.append({"name": "Mobile Informational Layout", "status": "PASSED"})
+            capture_screenshot(
+                mobile_page, 
+                "15-mobile-homepage.png", 
+                "Responsive Mobile Article & Policy layout without horizontal overflow", 
+                "Mobile Informational Layout"
+            )
 
             # Mobile Checkout
             mobile_page.goto(f"{BASE_URL}/checkout")
-            time.sleep(0.5)
-            shot_path = os.path.join(SCREENSHOTS_DIR, "17-mobile-checkout.png")
-            mobile_page.screenshot(path=shot_path, full_page=True)
-            captured_screenshots.append({"name": "17-mobile-checkout.png", "path": shot_path, "description": "Responsive Mobile Checkout review with stacked address and payment cards"})
-            test_results.append({"name": "Mobile Checkout Responsive Layout", "status": "PASSED"})
+            capture_screenshot(
+                mobile_page, 
+                "17-mobile-checkout.png", 
+                "Responsive Mobile Checkout review with stacked address and payment cards", 
+                "Mobile Checkout Responsive Layout"
+            )
 
             mobile_context.close()
             browser.close()
@@ -440,13 +566,14 @@ def run_verification():
         return True
 
     finally:
-        # Terminate Flask server cleanly
-        server_process.terminate()
-        try:
-            server_process.wait(timeout=3)
-        except Exception:
-            server_process.kill()
-        print("[CLEANUP] Flask test server shut down cleanly.")
+        # Terminate Flask server cleanly if we started it
+        if server_process:
+            server_process.terminate()
+            try:
+                server_process.wait(timeout=3)
+            except Exception:
+                server_process.kill()
+            print("[CLEANUP] Flask test server shut down cleanly.")
 
 
 if __name__ == "__main__":

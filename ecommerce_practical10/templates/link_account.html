@@ -5,16 +5,19 @@
 {% block content %}
 <div class="auth-wrapper" style="max-width: 480px;">
     <div class="auth-header">
+        <div style="font-size: 0.8rem; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 0.25rem;">
+            Security Checkpoint
+        </div>
         <h1>Link Google Account</h1>
         <p>Security Verification Required</p>
     </div>
 
-    <div class="account-link-notice">
-        <p style="margin-bottom: 0.5rem; color: var(--text-main);">
-            🔒 <strong>Existing Account Detected</strong>
+    <div class="account-link-notice" style="background: var(--surface-subtle); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 1.25rem; margin-bottom: 1.75rem;">
+        <p style="margin-bottom: 0.5rem; color: var(--text-main); font-weight: 700;">
+            🔒 Existing Account Detected
         </p>
-        <p>
-            An account already exists for <strong>{{ email }}</strong>. To protect your profile and prevent unauthorized account linking, please enter your existing password below.
+        <p style="margin: 0; font-size: 0.92rem; line-height: 1.55;">
+            An existing account matches <strong>{{ email }}</strong>. To prevent unauthorized profile linking, please confirm your account password.
         </p>
     </div>
 
@@ -28,7 +31,7 @@
                 class="form-control" 
                 value="{{ email }}" 
                 disabled
-                style="background-color: #f1f5f9; cursor: not-allowed;"
+                style="background-color: var(--surface-subtle); cursor: not-allowed;"
             >
         </div>
 
@@ -45,8 +48,8 @@
             >
         </div>
 
-        <button type="submit" class="btn btn-primary btn-block" id="btn-confirm-link" style="margin-top: 1rem;">
-            Verify & Link Google Account
+        <button type="submit" class="btn btn-primary btn-block btn-lg" id="btn-confirm-link" style="margin-top: 1.25rem;">
+            Verify &amp; Link Google Account
         </button>
     </form>
 

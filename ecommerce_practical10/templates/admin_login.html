@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block title %}Operations Console Login - NexusMart Admin{% endblock %}
+
+{% block content %}
+<div class="auth-wrapper" style="max-width: 460px; border-top: 4px solid #4F46E5;">
+    <div class="auth-header">
+        <div style="display: inline-flex; align-items: center; gap: 6px; background: #EEF2FF; border: 1px solid #C7D2FE; color: #4338CA; padding: 0.35rem 0.85rem; border-radius: var(--radius-full); font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.85rem;">
+            <span class="admin-badge-dot"></span> Operations Console
+        </div>
+        <h1>Staff Authentication</h1>
+        <p>Enter authorized administrative credentials to manage catalog products, live inventory, coupons, and orders.</p>
+    </div>
+
+    <form method="POST" action="{{ url_for('admin_login') }}" id="admin-login-form" novalidate>
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+        
+        <div class="form-group">
+            <label for="admin-email">Admin Work Email Address *</label>
+            <input 
+                type="email" 
+                id="admin-email" 
+                name="email" 
+                class="form-control" 
+                placeholder="admin@nexusmart.com"
+                value="{{ email or '' }}" 
+                required
+            >
+        </div>
+
+        <div class="form-group">
+            <label for="admin-password">Secure Password *</label>
+            <input 
+                type="password" 
+                id="admin-password" 
+                name="password" 
+                class="form-control" 
+                placeholder="Enter administrator password"
+                required
+            >
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-block btn-lg" id="btn-admin-login-submit" style="margin-top: 1.25rem; background: #4F46E5; border-color: #4F46E5;">
+            Authenticate Console Access &rarr;
+        </button>
+    </form>
+
+    <div class="form-footer">
+        <p>
+            Customer portal? <a href="{{ url_for('login') }}">Switch to Customer Sign In</a>
+        </p>
+    </div>
+</div>
+{% endblock %}

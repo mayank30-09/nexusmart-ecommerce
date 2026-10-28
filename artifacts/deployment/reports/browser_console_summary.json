@@ -2,9 +2,20 @@
   "console_messages": [
     {
       "type": "warning",
-      "text": "Unrecognized feature: 'web-share'.",
+      "text": "The powerPreference option is currently ignored when calling requestAdapter() on Windows. See https://crbug.com/369219127",
       "location": {
-        "url": "https://checkout.razorpay.com/v1/checkout.js",
+        "url": "",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "type": "warning",
+      "text": "No available adapters.",
+      "location": {
+        "url": "https://accounts.google.com/v3/signin/identifier?opparams=%253F&dsh=S839744190%3A1793146551036658&access_type=online&client_id=341210090305-u2i16cjs86sm6188cccue5r8h29lmf55.apps.googleusercontent.com&o2v=2&prompt=select_account&redirect_uri=http%3A%2F%2F127.0.0.1%3A5000%2Fauth%2Fgoogle%2Fcallback&response_type=code&scope=openid+email+profile&service=lso&state=mt6TQbUh02L-zJEDZjuPqVFHNdzxz8gVEWipoY83KJ4&flowName=GeneralOAuthLite&continue=https%3A%2F%2Faccounts.google.com%2Fsignin%2Foauth%2Flegacy%2Fconsent%3Fauthuser%3Dunknown%26part%3DAJi8hAN_vE06JGjcknOJPd16IlmXrn4GYoz0gDOMWB_LprxpHsiU52GT2JmQnFXzhe-9YOHU1XZecOwxzd-CNqJYCBwcizBWhnmttLEvrzKCH22v9b60UiDb79NlMA1iRE0p4M7tJdJsbaCN1COdJcl_12rW3O_fawuxQWEaDgnJZ5UNKZBge_3zNgHPNheohR5BntfGYqKGe9IyeH4BS2nWiLLQTzqivX9Pg2jTZfuGLp9kU6foO3TDc7BEA21gX8y660C3LlEM19KxludsOj7ReTaVlfHTmEGnHXLLGr-YGOyYC9ip279qX-7O2aUX6s6AAc919891Ot5eRnsWIXwKoUKz7XAP2ASiUAgsjUhELsrCq3MfJVGLaOFbO-QkcbD0_PcNeL2b1o2fK6hto-DRENGpGKi97Eunp8uhHpyzNrPiy3z2yPtGvoGagN8k8G6gtyVBMV6oKqeKXwlxt2lv1QC_2fRjBQ%26flowName%3DGeneralOAuthFlow%26as%3DS839744190%253A1793146551036658%26client_id%3D341210090305-u2i16cjs86sm6188cccue5r8h29lmf55.apps.googleusercontent.com%23&app_domain=http%3A%2F%2F127.0.0.1%3A5000&rart=ANgoxccspwIO_bqLMsK6maHkaKboKkYynh1U-lOKhl8ObpfQLf75TkTjX6KQkDfBBQWQQMs37-X99_qokr-h-VZlgM-SpddfDsVAhO-vX2nlL_Opiq84b2M",
         "line": 0,
         "column": 0,
         "lineNumber": 0,
@@ -24,9 +35,196 @@
     },
     {
       "type": "error",
-      "text": "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "text": "Refused to get unsafe header \"x-rtb-fingerprint-id\"",
       "location": {
-        "url": "https://api.razorpay.com/v2/standard_checkout/preferences?key_id=rzp_test_mockkey123&session_token=ED598FE25CE2B62B8BE9917FDA8CC2A0AF61C307CE39FB5C8FCD6D4AAC2EC8E34ED27AABB4893808239113746566380A51D04840D933C61A22774F6656B65DA07305EA0FCDF0AEDD7889CF158AB1E52AE4E3F2D890567E0DC43592EA448F42D91C2404EA127C5A0D",
+        "url": "https://checkout-static-next.razorpay.com/build/039c10803e32dc1df9fd550cb01c6db46bf687c6/v2-entry.modern.js",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "type": "error",
+      "text": "Refused to get unsafe header \"request-id\"",
+      "location": {
+        "url": "https://checkout-static-next.razorpay.com/build/039c10803e32dc1df9fd550cb01c6db46bf687c6/v2-entry.modern.js",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "type": "error",
+      "text": "Permissions policy violation: accelerometer is not allowed in this document.",
+      "location": {
+        "url": "https://browser.sentry-cdn.com/7.64.0/bundle.min.js",
+        "line": 1,
+        "column": 0,
+        "lineNumber": 1,
+        "columnNumber": 0
+      }
+    },
+    {
+      "type": "warning",
+      "text": "The devicemotion events are blocked by permissions policy. See https://github.com/w3c/webappsec-permissions-policy/blob/master/features.md#sensor-features",
+      "location": {
+        "url": "https://browser.sentry-cdn.com/7.64.0/bundle.min.js",
+        "line": 1,
+        "column": 0,
+        "lineNumber": 1,
+        "columnNumber": 0
+      }
+    },
+    {
+      "type": "error",
+      "text": "Permissions policy violation: accelerometer is not allowed in this document.",
+      "location": {
+        "url": "https://browser.sentry-cdn.com/7.64.0/bundle.min.js",
+        "line": 1,
+        "column": 0,
+        "lineNumber": 1,
+        "columnNumber": 0
+      }
+    },
+    {
+      "type": "warning",
+      "text": "The deviceorientation events are blocked by permissions policy. See https://github.com/w3c/webappsec-permissions-policy/blob/master/features.md#sensor-features",
+      "location": {
+        "url": "https://browser.sentry-cdn.com/7.64.0/bundle.min.js",
+        "line": 1,
+        "column": 0,
+        "lineNumber": 1,
+        "columnNumber": 0
+      }
+    },
+    {
+      "type": "warning",
+      "text": "Mixed Content: The page at 'https://api.razorpay.com/v1/checkout/public?traffic_env=production&build=039c10803e32dc1df9fd550cb01c6db46bf687c6&build_v1=755bf4b2e2419bf0ffc2bac7c1fd6e126753d61d&checkout_v2=1&new_session=1&rzp_device_id=1.2b317a68314055c46e9c596a41ed183b3b8851a1.1793146565063.31653386&unified_session_id=Tt7w420uAKWmkz&session_token=40E0A952DAF612B1BCD6C35DF185DEECF596562F1B12A245FB24C9139D16E5B4456A218363583DF15B0AD6CF3E3A84889DC6DB843D8D411F6433118B44C70FF1DE5A63FC9D3D1952CD2A1CD4976BFFFA86BEC622E29872BBF0881277FE7F5929018A6D99F64E8BBD' was loaded over HTTPS, but requested an insecure element 'http://localhost:37857/9364003.png'. This request was not upgraded to HTTPS because it is a local network request.",
+      "location": {
+        "url": "https://api.razorpay.com/v1/checkout/public?traffic_env=production&build=039c10803e32dc1df9fd550cb01c6db46bf687c6&build_v1=755bf4b2e2419bf0ffc2bac7c1fd6e126753d61d&checkout_v2=1&new_session=1&rzp_device_id=1.2b317a68314055c46e9c596a41ed183b3b8851a1.1793146565063.31653386&unified_session_id=Tt7w420uAKWmkz&session_token=40E0A952DAF612B1BCD6C35DF185DEECF596562F1B12A245FB24C9139D16E5B4456A218363583DF15B0AD6CF3E3A84889DC6DB843D8D411F6433118B44C70FF1DE5A63FC9D3D1952CD2A1CD4976BFFFA86BEC622E29872BBF0881277FE7F5929018A6D99F64E8BBD",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "type": "warning",
+      "text": "Unrecognized feature: 'web-share'.",
+      "location": {
+        "url": "https://checkout.razorpay.com/v1/checkout.js",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "type": "error",
+      "text": "Refused to get unsafe header \"x-rtb-fingerprint-id\"",
+      "location": {
+        "url": "https://checkout-static-next.razorpay.com/build/039c10803e32dc1df9fd550cb01c6db46bf687c6/v2-entry.modern.js",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "type": "error",
+      "text": "Refused to get unsafe header \"request-id\"",
+      "location": {
+        "url": "https://checkout-static-next.razorpay.com/build/039c10803e32dc1df9fd550cb01c6db46bf687c6/v2-entry.modern.js",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "type": "error",
+      "text": "Permissions policy violation: accelerometer is not allowed in this document.",
+      "location": {
+        "url": "https://browser.sentry-cdn.com/7.64.0/bundle.min.js",
+        "line": 1,
+        "column": 0,
+        "lineNumber": 1,
+        "columnNumber": 0
+      }
+    },
+    {
+      "type": "warning",
+      "text": "The devicemotion events are blocked by permissions policy. See https://github.com/w3c/webappsec-permissions-policy/blob/master/features.md#sensor-features",
+      "location": {
+        "url": "https://browser.sentry-cdn.com/7.64.0/bundle.min.js",
+        "line": 1,
+        "column": 0,
+        "lineNumber": 1,
+        "columnNumber": 0
+      }
+    },
+    {
+      "type": "error",
+      "text": "Permissions policy violation: accelerometer is not allowed in this document.",
+      "location": {
+        "url": "https://browser.sentry-cdn.com/7.64.0/bundle.min.js",
+        "line": 1,
+        "column": 0,
+        "lineNumber": 1,
+        "columnNumber": 0
+      }
+    },
+    {
+      "type": "warning",
+      "text": "The deviceorientation events are blocked by permissions policy. See https://github.com/w3c/webappsec-permissions-policy/blob/master/features.md#sensor-features",
+      "location": {
+        "url": "https://browser.sentry-cdn.com/7.64.0/bundle.min.js",
+        "line": 1,
+        "column": 0,
+        "lineNumber": 1,
+        "columnNumber": 0
+      }
+    },
+    {
+      "type": "warning",
+      "text": "Mixed Content: The page at 'https://api.razorpay.com/v1/checkout/public?traffic_env=production&build=039c10803e32dc1df9fd550cb01c6db46bf687c6&build_v1=755bf4b2e2419bf0ffc2bac7c1fd6e126753d61d&checkout_v2=1&new_session=1&rzp_device_id=1.2b317a68314055c46e9c596a41ed183b3b8851a1.1793146565063.31653386&unified_session_id=Tt7w420uAKWmkz&session_token=EC80F938CB7EA40A7EE696911DA9F3EB620B47A1F4A229D8C8EB6618BBAE4B827E5DE5004E4C128F7AD351A6807BD8C942B187F42E751B5CFC5CF16652F958E84C72104187C175EFCE28FA61365DAB739129CBBED5594056DD26BBF6E045FB242D02EBF0554F30BB' was loaded over HTTPS, but requested an insecure element 'http://localhost:37857/5683195.png'. This request was not upgraded to HTTPS because it is a local network request.",
+      "location": {
+        "url": "https://api.razorpay.com/v1/checkout/public?traffic_env=production&build=039c10803e32dc1df9fd550cb01c6db46bf687c6&build_v1=755bf4b2e2419bf0ffc2bac7c1fd6e126753d61d&checkout_v2=1&new_session=1&rzp_device_id=1.2b317a68314055c46e9c596a41ed183b3b8851a1.1793146565063.31653386&unified_session_id=Tt7w420uAKWmkz&session_token=EC80F938CB7EA40A7EE696911DA9F3EB620B47A1F4A229D8C8EB6618BBAE4B827E5DE5004E4C128F7AD351A6807BD8C942B187F42E751B5CFC5CF16652F958E84C72104187C175EFCE28FA61365DAB739129CBBED5594056DD26BBF6E045FB242D02EBF0554F30BB",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 403 (FORBIDDEN)",
+      "location": {
+        "url": "http://127.0.0.1:5000/admin/products",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 403 (FORBIDDEN)",
+      "location": {
+        "url": "http://127.0.0.1:5000/admin/orders",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 403 (FORBIDDEN)",
+      "location": {
+        "url": "http://127.0.0.1:5000/admin/coupons",
         "line": 0,
         "column": 0,
         "lineNumber": 0,
@@ -36,9 +234,19 @@
   ],
   "network_errors": [
     {
-      "url": "https://api.razorpay.com/v2/standard_checkout/preferences?key_id=rzp_test_mockkey123&session_token=ED598FE25CE2B62B8BE9917FDA8CC2A0AF61C307CE39FB5C8FCD6D4AAC2EC8E34ED27AABB4893808239113746566380A51D04840D933C61A22774F6656B65DA07305EA0FCDF0AEDD7889CF158AB1E52AE4E3F2D890567E0DC43592EA448F42D91C2404EA127C5A0D",
-      "status": 401,
-      "status_text": "Unauthorized"
+      "url": "http://127.0.0.1:5000/admin/products",
+      "status": 403,
+      "status_text": "FORBIDDEN"
+    },
+    {
+      "url": "http://127.0.0.1:5000/admin/orders",
+      "status": 403,
+      "status_text": "FORBIDDEN"
+    },
+    {
+      "url": "http://127.0.0.1:5000/admin/coupons",
+      "status": 403,
+      "status_text": "FORBIDDEN"
     }
   ]
 }

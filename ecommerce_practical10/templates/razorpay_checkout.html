@@ -8,33 +8,39 @@
 {% endblock %}
 
 {% block content %}
-<div class="checkout-container" style="max-width: 600px; margin: 2rem auto; text-align: center;">
-    <div class="profile-card" style="padding: 2.5rem 1.5rem;">
-        <div style="font-size: 3rem; margin-bottom: 0.5rem;">🔒</div>
-        <h1 style="font-size: 1.6rem; color: var(--text-main); margin-bottom: 0.5rem;">
-            Securing Payment with Razorpay
-        </h1>
-        <p style="color: var(--text-muted); font-size: 0.95rem; margin-bottom: 1.5rem;">
-            Order Reference: <strong style="color: var(--primary);">{{ order['order_reference'] }}</strong>
-        </p>
-
-        <div style="background: #f8fafc; padding: 1.25rem; border-radius: 8px; border: 1px solid var(--border-color); margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: center;">
-            <span style="font-size: 1rem; color: var(--text-muted); font-weight: 500;">Total Payable:</span>
-            <span style="font-size: 1.6rem; font-weight: 800; color: var(--text-main);">₹{{ "%.2f"|format(order['final_total']) }}</span>
+<div class="checkout-container" style="max-width: 580px; margin: 3rem auto; text-align: center;">
+    <div class="profile-card" style="padding: 3rem 2.25rem;">
+        <div style="width: 60px; height: 60px; border-radius: 50%; background: var(--accent-light); color: var(--accent); display: flex; align-items: center; justify-content: center; margin: 0 auto 1.25rem auto;">
+            <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+            </svg>
         </div>
 
-        <p style="font-size: 0.88rem; color: var(--text-muted); margin-bottom: 1.5rem;">
-            A secure payment popup should open automatically. If it was blocked by your browser, click the button below:
+        <h1 style="font-size: 1.85rem; color: var(--text-main); margin-bottom: 0.4rem;">
+            Securing Payment with Razorpay
+        </h1>
+        <p style="color: var(--text-muted); font-size: 0.95rem; margin-bottom: 1.75rem;">
+            Order Reference: <strong style="font-family: var(--font-mono); color: var(--accent);">#{{ order['order_reference'] }}</strong>
         </p>
 
-        <button type="button" class="btn btn-primary btn-lg" id="btn-open-razorpay" data-order-id="{{ order['razorpay_order_id'] }}" data-order-ref="{{ order['order_reference'] }}" style="width: 100%; margin-bottom: 1rem;">
+        <div style="background: var(--surface-subtle); padding: 1.25rem 1.75rem; border-radius: var(--radius-md); border: 1px solid var(--border-color); margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: center;">
+            <span style="font-size: 0.95rem; color: var(--text-muted); font-weight: 600;">Total Payable:</span>
+            <span style="font-family: var(--font-mono); font-size: 1.85rem; font-weight: 700; color: var(--accent);">₹{{ "%.2f"|format(order['final_total']) }}</span>
+        </div>
+
+        <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 1.75rem; line-height: 1.5;">
+            The Razorpay Secure Checkout window should open automatically. If your browser blocked popups, click the button below:
+        </p>
+
+        <button type="button" class="btn btn-primary btn-lg btn-block" id="btn-open-razorpay" data-order-id="{{ order['razorpay_order_id'] }}" data-order-ref="{{ order['order_reference'] }}" style="margin-bottom: 1.25rem;">
             💳 Open Razorpay Checkout Modal
         </button>
 
         <form method="POST" action="{{ url_for('razorpay_cancel', order_ref=order['order_reference']) }}" id="form-cancel-payment">
             <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
             <button type="submit" class="btn btn-outline btn-sm" id="btn-cancel-checkout">
-                ✕ Cancel and Return to Cart
+                ✕ Cancel Payment and Return to Cart
             </button>
         </form>
 
@@ -75,7 +81,7 @@ document.addEventListener("DOMContentLoaded", function () {
             "contact": "{{ customer_phone or '9999999999' }}"
         },
         "theme": {
-            "color": "#2563eb"
+            "color": "#0C4A3A"
         },
         "handler": function (response) {
             document.getElementById('razorpay_payment_id').value = response.razorpay_payment_id || "";
@@ -99,11 +105,9 @@ document.addEventListener("DOMContentLoaded", function () {
                 document.getElementById('failure_reason').value = reason;
                 document.getElementById('payment-failed-form').submit();
             });
-            // Automatically launch checkout modal
-            rzp.open();
         }
     } catch (e) {
-        console.warn("Could not auto-open Razorpay:", e);
+        console.warn("Razorpay SDK initialization warning:", e);
     }
 
     var openBtn = document.getElementById('btn-open-razorpay');
@@ -115,10 +119,21 @@ document.addEventListener("DOMContentLoaded", function () {
                 rzp = new Razorpay(options);
                 rzp.open();
             } else {
-                alert("Razorpay payment script is loading. Please check your network connection.");
+                alert("Razorpay checkout is unavailable. Please check your internet connection.");
             }
         });
     }
+
+    // Attempt auto-opening if supported
+    setTimeout(function () {
+        if (rzp) {
+            try {
+                rzp.open();
+            } catch (err) {
+                console.log("Auto-open blocked, user may click manually");
+            }
+        }
+    }, 400);
 });
 </script>
 {% endblock %}

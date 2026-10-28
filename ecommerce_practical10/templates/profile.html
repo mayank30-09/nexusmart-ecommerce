@@ -4,17 +4,20 @@
 
 {% block content %}
 <div class="profile-container">
-    <div class="profile-header">
-        <h1>Customer Profile & Delivery Addresses</h1>
-        <p>Manage your account credentials, personal information, and shipping addresses.</p>
+    <div class="profile-header" style="border-bottom: 1px solid var(--border-color); padding-bottom: 1.5rem; margin-bottom: 2rem;">
+        <div style="font-size: 0.8rem; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 0.25rem;">
+            Account Center
+        </div>
+        <h1>Profile & Delivery Addresses</h1>
+        <p style="margin: 0; max-width: 650px;">Manage your account credentials, view connected authentication methods, and organize your shipping destinations.</p>
     </div>
 
     <div class="profile-layout-grid">
         <!-- Column 1: Account & Profile Details -->
         <div class="profile-card" id="customer-profile-card">
-            <h2>Personal Information</h2>
-            <p class="text-muted" style="margin-bottom: 1.25rem; font-size: 0.88rem;">
-                Member since: {{ customer['created_at'][:10] }}
+            <h2 style="font-size: 1.25rem; margin-bottom: 0.25rem;">Personal Information</h2>
+            <p class="text-muted" style="margin-bottom: 1.5rem; font-size: 0.88rem;">
+                Member registered on: <span style="font-family: var(--font-mono); font-weight: 600;">{{ customer['created_at'][:10] }}</span>
             </p>
 
             <form method="POST" action="{{ url_for('profile') }}" id="profile-update-form">
@@ -44,22 +47,28 @@
                     >
                 </div>
 
-                <div class="form-group" style="margin-top: 1rem;">
-                    <label>Authentication Method</label>
+                <div class="form-group" style="margin-top: 1.25rem;">
+                    <label>Authentication Mode</label>
                     <div style="margin-top: 0.35rem;">
                         {% if customer['google_id'] %}
                             <span class="badge-oauth badge-oauth-connected">
+                                <svg viewBox="0 0 18 18" width="14" height="14" aria-hidden="true">
+                                    <path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.616z"/>
+                                    <path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.258c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332C2.438 15.983 5.482 18 9 18z"/>
+                                    <path fill="#FBBC05" d="M3.964 10.707c-.18-.54-.282-1.117-.282-1.707s.102-1.167.282-1.707V4.961H.957C.347 6.175 0 7.55 0 9s.347 2.825.957 4.039l3.007-2.332z"/>
+                                    <path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0 5.482 0 2.438 2.017.957 4.961L3.964 7.293C4.672 5.166 6.656 3.58 9 3.58z"/>
+                                </svg>
                                 Google Sign-In Connected
                             </span>
                         {% else %}
                             <span class="badge-oauth badge-oauth-disconnected">
-                                Local Password Account
+                                🔑 Local Password Account
                             </span>
                         {% endif %}
                     </div>
                 </div>
 
-                <button type="submit" class="btn btn-primary btn-block" id="btn-update-profile" style="margin-top: 1.25rem;">
+                <button type="submit" class="btn btn-primary btn-block" id="btn-update-profile" style="margin-top: 1.5rem;">
                     Save Profile Changes
                 </button>
             </form>
@@ -68,8 +77,8 @@
         <!-- Column 2: Delivery Addresses Management -->
         <div class="addresses-section">
             <div class="profile-card" id="saved-addresses-card">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-                    <h2>Saved Delivery Addresses</h2>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+                    <h2 style="font-size: 1.25rem; margin: 0;">Saved Delivery Addresses</h2>
                     <span class="brand-badge" id="address-count-badge">{{ addresses|length }} Saved</span>
                 </div>
 
@@ -84,7 +93,7 @@
                                         </div>
                                     {% endif %}
                                     <div class="address-line-text"><strong>{{ addr['address_line'] }}</strong></div>
-                                    <div class="address-sub-text">{{ addr['city'] }}, {{ addr['state'] }} - {{ addr['postal_code'] }}</div>
+                                    <div class="address-sub-text">{{ addr['city'] }}, {{ addr['state'] }} - <span style="font-family: var(--font-mono); font-weight: 600;">{{ addr['postal_code'] }}</span></div>
                                 </div>
 
                                 <div class="address-item-actions">
@@ -112,21 +121,21 @@
                         {% endfor %}
                     </div>
                 {% else %}
-                    <div class="empty-state" style="padding: 1.5rem 1rem; border: 1px dashed var(--border-color); border-radius: var(--radius); margin-bottom: 1.5rem;">
-                        <p style="margin: 0; color: var(--text-muted);">No delivery addresses saved yet. Add your primary shipping address below.</p>
+                    <div class="empty-state" style="padding: 2rem 1.5rem; margin-bottom: 1.5rem;">
+                        <p style="margin: 0; color: var(--text-muted);">No shipping destinations saved yet. Use the form below to add your primary delivery address.</p>
                     </div>
                 {% endif %}
 
                 <!-- Add New Address Form -->
-                <div class="add-address-box" style="margin-top: 1.75rem; padding-top: 1.5rem; border-top: 1px solid var(--border-color);">
-                    <h3>Add New Delivery Address</h3>
-                    <p class="text-muted" style="margin-bottom: 1rem; font-size: 0.88rem;">Add a destination for order deliveries.</p>
+                <div class="add-address-box" style="margin-top: 2rem; padding-top: 1.75rem; border-top: 1px solid var(--border-color);">
+                    <h3 style="font-size: 1.1rem; margin-bottom: 0.25rem;">Add New Delivery Address</h3>
+                    <p class="text-muted" style="margin-bottom: 1.25rem; font-size: 0.88rem;">Add a verified destination for order fulfillment.</p>
 
                     <form method="POST" action="{{ url_for('add_address') }}" id="add-address-form">
                         <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
 
                         <div class="form-group">
-                            <label for="address_line">Street Address / House / Flat *</label>
+                            <label for="address_line">Street Address / House / Suite *</label>
                             <input 
                                 type="text" 
                                 id="address_line" 
@@ -137,7 +146,7 @@
                             >
                         </div>
 
-                        <div class="address-fields-grid">
+                        <div class="address-fields-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 0.75rem;">
                             <div class="form-group">
                                 <label for="city">City *</label>
                                 <input 
@@ -176,7 +185,7 @@
                         </div>
 
                         <div class="form-checkbox-group" style="margin: 1rem 0;">
-                            <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                            <label style="display: flex; align-items: center; gap: 0.6rem; cursor: pointer; font-size: 0.9rem;">
                                 <input 
                                     type="checkbox" 
                                     name="is_default" 
@@ -189,7 +198,7 @@
                         </div>
 
                         <button type="submit" class="btn btn-primary" id="btn-save-address">
-                            + Save Address
+                            + Save New Address
                         </button>
                     </form>
                 </div>

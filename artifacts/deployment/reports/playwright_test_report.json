@@ -1,9 +1,9 @@
 {
-  "timestamp": "2026-10-27T20:43:23Z",
+  "timestamp": "2026-10-28T00:16:23Z",
   "base_url": "http://127.0.0.1:5000",
   "browser": "Chromium Headless",
-  "tests_total": 20,
-  "tests_passed": 20,
+  "tests_total": 25,
+  "tests_passed": 25,
   "tests_failed": 0,
   "test_scenarios": [
     {
@@ -71,6 +71,26 @@
       "status": "PASSED"
     },
     {
+      "name": "AI Product Recommendations (FR-16)",
+      "status": "PASSED"
+    },
+    {
+      "name": "Admin Dashboard & KPIs",
+      "status": "PASSED"
+    },
+    {
+      "name": "Admin Products & Stock Control (FR-17, FR-18)",
+      "status": "PASSED"
+    },
+    {
+      "name": "Admin Customer Orders (FR-20)",
+      "status": "PASSED"
+    },
+    {
+      "name": "Admin Discount & Coupon Management (FR-19)",
+      "status": "PASSED"
+    },
+    {
       "name": "Mobile Catalog Responsive Layout",
       "status": "PASSED"
     },
@@ -87,7 +107,7 @@
       "status": "PASSED"
     }
   ],
-  "screenshots_captured": 20,
-  "console_errors_count": 3,
-  "network_errors_count": 1
+  "screenshots_captured": 25,
+  "console_errors_count": 21,
+  "network_errors_count": 3
 }

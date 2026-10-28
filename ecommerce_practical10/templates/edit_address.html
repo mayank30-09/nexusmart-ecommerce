@@ -3,7 +3,7 @@
 {% block title %}Edit Delivery Address - NexusMart{% endblock %}
 
 {% block content %}
-<div class="edit-address-container" style="max-width: 640px; margin: 0 auto;">
+<div class="edit-address-container" style="max-width: 640px; margin: 1rem auto 3rem auto;">
     <nav class="breadcrumb-nav" aria-label="Breadcrumb">
         <a href="{{ url_for('profile') }}" class="back-link" id="link-back-profile">&larr; Back to Profile & Addresses</a>
         <span class="breadcrumb-separator">/</span>
@@ -11,9 +11,9 @@
     </nav>
 
     <div class="profile-card" id="edit-address-card">
-        <h2>Edit Delivery Address</h2>
-        <p class="text-muted" style="margin-bottom: 1.25rem; font-size: 0.88rem;">
-            Update your shipping address information below.
+        <h2 style="font-size: 1.4rem; margin-bottom: 0.25rem;">Edit Delivery Address</h2>
+        <p class="text-muted" style="margin-bottom: 1.5rem; font-size: 0.9rem;">
+            Update your shipping address details. Changes will apply to future checkout sessions.
         </p>
 
         <form method="POST" action="{{ url_for('edit_address', address_id=address['id']) }}" id="edit-address-form">
@@ -31,7 +31,7 @@
                 >
             </div>
 
-            <div class="address-fields-grid">
+            <div class="address-fields-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 0.75rem;">
                 <div class="form-group">
                     <label for="city">City *</label>
                     <input 
@@ -69,8 +69,8 @@
                 </div>
             </div>
 
-            <div class="form-checkbox-group" style="margin: 1rem 0;">
-                <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+            <div class="form-checkbox-group" style="margin: 1.25rem 0;">
+                <label style="display: flex; align-items: center; gap: 0.6rem; cursor: pointer; font-size: 0.9rem;">
                     <input 
                         type="checkbox" 
                         name="is_default" 
@@ -82,11 +82,11 @@
                 </label>
             </div>
 
-            <div style="display: flex; gap: 0.75rem; margin-top: 1.5rem;">
+            <div style="display: flex; gap: 0.75rem; align-items: center;">
                 <button type="submit" class="btn btn-primary" id="btn-save-edit-address">
                     Save Changes
                 </button>
-                <a href="{{ url_for('profile') }}" class="btn btn-outline" id="btn-cancel-edit-address">
+                <a href="{{ url_for('profile') }}" class="btn btn-outline">
                     Cancel
                 </a>
             </div>

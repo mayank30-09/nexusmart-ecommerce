@@ -40,6 +40,6 @@ In accordance with rigorous Software Engineering standards (Pressman SQA, IEEE 8
 - **Current State**: Concurrency is safely handled using database write locks (`BEGIN IMMEDIATE` in SQLite, row-level `SELECT ... FOR UPDATE` in PostgreSQL), preventing double-spending and overselling of stock up to ~100 concurrent checkout sessions.
 - **High-Scale Limitation**: For high-volume enterprise traffic (>10,000 requests/sec flash sales), a distributed caching and queuing layer (such as Redis with Celery) would be recommended to queue order placements rather than relying solely on relational database row locks.
 
-### 3.4 Administrative Portal
-- **Current State**: Product catalog, discount coupons, and inventory data are seeded and managed via database operations. Customers cannot modify catalog or coupon configurations.
-- **Future Enhancement**: A dedicated `/admin` management interface with multi-role RBAC (Role-Based Access Control) can be added as a separate privileged portal.
+### 3.4 Administrative Portal & Staff Operations
+- **Current State**: Full Admin Operations Portal implemented (`FR-17` through `FR-20`) accessible at `/admin/login` and `/admin/dashboard`, protected by `@admin_required` RBAC check (`is_admin=1`). Provides live KPI monitoring (gross revenue, orders, catalog count, low-stock threshold), product catalog CRUD (`/admin/products`), direct warehouse stock adjustments (`/admin/products/<id>/stock`), order status transitions (`/admin/orders/<id>/status`), and promotional coupon management (`/admin/coupons`).
+- **Future Enhancement**: Granular multi-tiered role definitions (e.g. warehouse staff vs financial auditor) and multi-factor authentication (MFA) for staff logins.

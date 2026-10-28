@@ -1,0 +1,144 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Promotional Coupons - NexusMart Admin{% endblock %}
+
+{% block content %}
+<div class="dashboard-container" style="max-width: 1240px;">
+    <!-- Admin Command Header -->
+    <div class="dashboard-header" style="background: linear-gradient(135deg, #0F172A 0%, #1E293B 100%); color: #FFFFFF; padding: 2.25rem; border-radius: var(--radius-lg); margin-bottom: 2rem; border: 1px solid rgba(255, 255, 255, 0.08); box-shadow: var(--shadow-md);">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1.25rem;">
+            <div>
+                <div style="display: inline-flex; align-items: center; gap: 8px; background: rgba(99, 102, 241, 0.2); border: 1px solid rgba(165, 180, 252, 0.3); color: #C7D2FE; padding: 0.35rem 0.85rem; border-radius: var(--radius-full); font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 0.85rem;">
+                    <span class="admin-badge-dot"></span> Promotions Subsystem
+                </div>
+                <h1 style="color: #FFFFFF; font-size: 2.1rem; margin-bottom: 0.4rem;">Voucher &amp; Coupon Control</h1>
+                <p style="color: #94A3B8; margin-bottom: 0; font-size: 0.95rem;">Configure percentage or fixed discount promo codes, enforce cart thresholds, and control active status.</p>
+            </div>
+            <div style="display: flex; gap: 0.75rem;">
+                <a href="{{ url_for('admin_dashboard') }}" class="btn btn-sm btn-outline" style="border-color: rgba(255,255,255,0.3); color: #FFFFFF;">
+                    &larr; Admin Overview
+                </a>
+                <a href="{{ url_for('admin_logout') }}" class="btn btn-sm btn-danger">
+                    🚪 Logout
+                </a>
+            </div>
+        </div>
+
+        <!-- Navigation Tabs -->
+        <div style="margin-top: 1.75rem; display: flex; gap: 0.5rem; flex-wrap: wrap; border-top: 1px solid rgba(255,255,255,0.12); padding-top: 1.25rem;">
+            <a href="{{ url_for('admin_dashboard') }}" class="btn btn-sm btn-outline" style="border-color: rgba(255,255,255,0.25); color: #E2E8F0;">
+                📊 Overview
+            </a>
+            <a href="{{ url_for('admin_products') }}" class="btn btn-sm btn-outline" style="border-color: rgba(255,255,255,0.25); color: #E2E8F0;">
+                📦 Products & Stock (FR-17, FR-18)
+            </a>
+            <a href="{{ url_for('admin_orders') }}" class="btn btn-sm btn-outline" style="border-color: rgba(255,255,255,0.25); color: #E2E8F0;">
+                📑 Customer Orders (FR-20)
+            </a>
+            <a href="{{ url_for('admin_coupons') }}" class="btn btn-sm btn-primary" style="background: #4F46E5; border-color: #4F46E5;">
+                🏷️ Coupons & Discounts (FR-19)
+            </a>
+        </div>
+    </div>
+
+    <!-- Create Coupon Card -->
+    <div class="profile-card" style="margin-bottom: 2rem;">
+        <h2 style="font-size: 1.35rem; margin-bottom: 0.35rem; color: var(--text-main);">➕ Create New Promotional Coupon</h2>
+        <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 1.5rem;">Define campaign parameters. Verified instantly upon customer entry at checkout review.</p>
+
+        <form method="POST" action="{{ url_for('admin_coupon_add') }}" id="form-create-coupon" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.25rem;">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+
+            <div>
+                <label for="cpn-code" style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.35rem;">Coupon Code *</label>
+                <input type="text" id="cpn-code" name="code" class="form-control" placeholder="e.g. FLASH25" style="text-transform: uppercase; font-family: var(--font-mono); font-weight: 600;" required>
+            </div>
+
+            <div>
+                <label for="cpn-type" style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.35rem;">Discount Type *</label>
+                <select id="cpn-type" name="discount_type" class="form-control" required>
+                    <option value="percentage">Percentage Off (%)</option>
+                    <option value="fixed">Flat Amount Off (₹)</option>
+                </select>
+            </div>
+
+            <div>
+                <label for="cpn-value" style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.35rem;">Discount Value *</label>
+                <input type="number" step="0.01" min="0.01" id="cpn-value" name="discount_value" class="form-control" placeholder="e.g. 15 or 150" required>
+            </div>
+
+            <div>
+                <label for="cpn-min" style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.35rem;">Min. Cart Value (₹)</label>
+                <input type="number" step="0.01" min="0" id="cpn-min" name="min_cart_value" class="form-control" placeholder="0.00" value="0.00">
+            </div>
+
+            <div>
+                <label for="cpn-limit" style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.35rem;">Usage Limit (Optional)</label>
+                <input type="number" min="1" id="cpn-limit" name="usage_limit" class="form-control" placeholder="e.g. 100">
+            </div>
+
+            <div style="grid-column: 1 / -1; display: flex; justify-content: flex-end;">
+                <button type="submit" class="btn btn-primary" id="btn-submit-coupon">
+                    + Deploy Coupon Code &rarr;
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Active Coupons Table -->
+    <div class="profile-card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 0.75rem;">
+            <div>
+                <h2 style="font-size: 1.35rem; margin-bottom: 0.25rem; color: var(--text-main);">Configured Discount Codes</h2>
+                <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 0;">Toggle status to activate or deactivate campaigns instantly without deleting records.</p>
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="data-table" id="admin-coupons-table">
+                <thead>
+                    <tr>
+                        <th>Code</th>
+                        <th>Discount Value</th>
+                        <th>Min. Cart Value</th>
+                        <th>Usage Tracking</th>
+                        <th>Campaign Status</th>
+                        <th style="text-align: right;">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for c in coupons %}
+                        <tr>
+                            <td><strong style="color: var(--accent); font-family: var(--font-mono); font-size: 1.05rem;">{{ c['code'] }}</strong></td>
+                            <td>
+                                {% if c['discount_type'] == 'percentage' %}
+                                    <span style="font-weight: 700; color: #0284C7; font-family: var(--font-mono);">{{ c['discount_value'] }}% Off</span>
+                                {% else %}
+                                    <span style="font-weight: 700; color: #059669; font-family: var(--font-mono);">₹{{ "%.2f"|format(c['discount_value']) }} Off</span>
+                                {% endif %}
+                            </td>
+                            <td style="font-family: var(--font-mono);">₹{{ "%.2f"|format(c['min_cart_value']) }}</td>
+                            <td style="font-family: var(--font-mono); font-size: 0.88rem;">
+                                {{ c['used_count'] }} {% if c['usage_limit'] %}/ {{ c['usage_limit'] }}{% else %}(unlimited){% endif %}
+                            </td>
+                            <td>
+                                <span class="badge-status {% if c['is_active'] == 1 %}badge-confirmed{% else %}badge-cancelled{% endif %}" id="coupon-status-{{ c['id'] }}">
+                                    {% if c['is_active'] == 1 %}Active{% else %}Inactive{% endif %}
+                                </span>
+                            </td>
+                            <td style="text-align: right;">
+                                <form method="POST" action="{{ url_for('admin_coupon_toggle', coupon_id=c['id']) }}" style="display: inline;">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                                    <button type="submit" class="btn btn-sm {% if c['is_active'] == 1 %}btn-danger{% else %}btn-outline{% endif %}" id="btn-toggle-coupon-{{ c['id'] }}">
+                                        {% if c['is_active'] == 1 %}Deactivate{% else %}Activate{% endif %}
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
